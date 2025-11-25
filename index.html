@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MyAIToolBox - Home</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f5f5f5;
+}
+header {
+  background: #ADD8E6;
+  padding: 15px;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+nav {
+  position: relative;
+}
+nav select {
+  padding: 8px;
+  font-size: 16px;
+}
+.container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+  text-align: center;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+.card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: 0.3s;
+  cursor: pointer;
+}
+.card:hover {
+  transform: scale(1.03);
+}
+.card h3 {
+  margin: 10px 0;
+}
+.thumbnail {
+  height: 130px;
+  background: #ccc;
+  border-radius: 8px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>MyAIToolBox</h1>
+  <nav>
+    <select id="projectMenu">
+      <option value="">Select Project</option>
+      <option value="https://createposter.netlify.app/">Create Poster</option>
+      <option value="https://audext.netlify.app/">Audio Extractor</option>
+      <option value="https://memjen.netlify.app/">Meme Generator</option>
+	  <option value="https://imageaiupscaler.netlify.app/">Image Upscaler</option>
+	  <option value="https://aiimgcompress.netlify.app/">Image Compressor</option>
+    </select>
+  </nav>
+</header>
+
+<div class="container">
+  <h2>AI Tools</h2>
+  <div class="grid">
+    <div class="card" onclick="go('https://createposter.netlify.app/')">
+      <img src="https://images.vexels.com/media/users/3/124759/raw/93f88cbf074da4938e40587890b98117-creativity-illustration-poster.jpg" width="200" height="200" class="thumbnail" />
+	  <!--<svg class="thumbnail" viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+	  <rect width="300" height="150" rx="10" ry="10" fill="#f0f0f0" />
+	  <path d="M150 30 L200 120 L100 120 Z" fill="#bbb" /></svg>-->
+      <h3>Create Poster</h3>
+	  <p style="font-size: 10px;"> Design your posters for any occassion </p>
+    </div>
+
+    <div class="card" onclick="go('https://audext.netlify.app/')">
+      <img src="https://play-lh.googleusercontent.com/0PGyH0kgvPx8cf2CngpJc8X1GG3T_EMlh3b7ikenJp2B4vJJW5tf80Vcy_oUetUpy2c" width="200" height="200" class="thumbnail" />
+      <h3>Audio Extractor</h3>
+	  <p style="font-size: 10px;"> Extract audio from video & make ringtones </p>
+    </div>
+
+    <div class="card" onclick="go('https://memjen.netlify.app/')">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAauyDjP28IvetRMSjaI9prhB440Kwqg5lzQ&s" width="200" height="200" class="thumbnail" />
+      <h3>Meme Generator</h3>
+	  <p style="font-size: 10px;"> Create funny meme's with captions </p>
+    </div>
+	
+	<div class="card" onclick="go('https://imageaiupscaler.netlify.app/')">
+      <img src="https://deepmaker.ai/_next/static/media/img-intro-2.b7a07e3f.png" width="200" height="200" class="thumbnail" />
+	  <h3>Image Upscaler</h3>
+	  <p style="font-size: 10px;"> Upscale your image to HD quality </p>
+    </div>
+	
+	<div class="card" onclick="go('https://aiimgcompress.netlify.app/')">
+      <img src="https://www.img2go.com/assets/blog/Img2Go_jpg_compression.jpg" width="200" height="200" class="thumbnail" />
+	  <h3>Image Compressor</h3>
+	  <p style="font-size: 10px;"> Compress your image with same quality </p>
+    </div>
+	
+  </div>
+</div>
+
+
+<script>
+function go(url) {
+  window.location.href = url;
+}
+
+document.getElementById("projectMenu").addEventListener("change", function() {
+  if (this.value) window.location.href = this.value;
+});
+</script>
+
+<!-- Buy Me a Coffee Button + Copyright -->
+<div class="bottom-center">
+  <a href="https://buymeacoffee.com/ikamlesh" target="_blank" class="coffee-btn">
+    <button>☕ Buy Me a Coffee</button>
+  </a>
+  <div class="copyright">
+    &copy; 2025 myaitoolbox.netlify.app and its subdomains. All rights reserved.
+  </div>
+</div>
+
+<style>
+  .bottom-center {
+    position: fixed;        /* Fix it to the viewport */
+    bottom: 20px;           /* Distance from bottom */
+    left: 50%;              /* Center horizontally */
+    transform: translateX(-50%);
+    text-align: center;     /* Center content inside */
+    z-index: 1000;
+  }
+
+  /* Button styling */
+  .coffee-btn button {
+    padding: 10px 20px;
+    background-color: #ADD8E6;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  .coffee-btn button:hover {
+    background-color: #87CEFA;
+  }
+
+  /* Copyright styling */
+  .bottom-center .copyright {
+    font-size: 12px;
+    color: #555;
+    margin-top: 5px;  /* Space between button and text */
+  }
+</style>
+
+
+</body>
+</html>
