@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Compressor + ZIP</title>
+
+  <style>
+    :root{--blue1:#cfefff;--blue2:#b7e0ff;--btn:#0b66b2;--muted:#0f3550}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+    body{background:linear-gradient(135deg,var(--blue1)0%,var(--blue2)100%);display:flex;align-items:center;justify-content:center;padding:28px;color:var(--muted);}
+    .card{width:100%;max-width:980px;background:rgba(255,255,255,0.92);border-radius:14px;box-shadow:0 10px 30px rgba(8,40,80,0.12);display:grid;grid-template-columns:420px 1fr;gap:20px;padding:20px;border:1px solid rgba(3,46,94,0.06);}
+    .left{padding:16px;display:flex;flex-direction:column;gap:12px}
+    .logo{display:flex;gap:12px;align-items:center}
+    .badge{width:48px;height:48px;border-radius:10px;background:linear-gradient(180deg,#97d9ff,#57b8ff);display:flex;align-items:center;justify-content:center;font-weight:800;color:white}
+    h1{font-size:18px;margin:0;color:var(--muted)}
+    p.lead{margin:0;color:#284b66;font-size:13px}
+    .drop{margin-top:8px;border-radius:10px;padding:12px;border:2px dashed rgba(8,40,80,0.06);background:linear-gradient(180deg,rgba(255,255,255,0.6),rgba(255,255,255,0.7));cursor:pointer;text-align:center;}
+    .drop:hover{border-color:rgba(11,102,178,0.3)}
+    .thumb{height:220px;border-radius:10px;background:linear-gradient(180deg,rgba(11,102,178,0.04),rgba(11,102,178,0.02));display:flex;align-items:center;justify-content:flex-start;overflow:auto;gap:6px;padding:6px;flex-wrap:wrap;}
+    .thumb-item{position:relative;display:inline-block;}
+    .thumb img{max-height:100%;max-width:100%;border-radius:6px;object-fit:contain;border:1px solid rgba(8,40,80,0.1);}
+    .overlay{position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,0.6);color:white;font-size:10px;padding:2px 4px;border-radius:4px;}
+    .filemeta{font-size:13px;color:#27465f;text-align:center;word-break:break-word}
+    .right{padding:16px;display:flex;flex-direction:column;gap:12px}
+    .btn{padding:10px 14px;border-radius:10px;border:0;background:var(--btn);color:white;font-weight:700;cursor:pointer}
+    .btn.secondary{background:transparent;color:var(--muted);border:1px solid rgba(8,40,80,0.06)}
+    .stats{display:flex;gap:10px;flex-wrap:wrap}
+    .stat{background:rgba(11,102,178,0.06);padding:10px;border-radius:8px;font-size:13px;color:#103a5a;min-width:120px;text-align:center}
+    #downloadArea{display:flex;margin-top:6px;align-items:center;gap:10px;flex-wrap:wrap;}
+    #downloadAllBtn{display:none;margin-top:6px;}
+    footer{grid-column:1/-1;text-align:center;color:rgba(8,40,80,0.45);font-size:12px;margin-top:6px}
+    @media(max-width:900px){.card{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="left">
+      <div class="logo"><div class="badge">I</div>
+        <div><h1>Image Compressor</h1>
+        <p class="lead">Upload multiple images, compress, and download all as ZIP file.</p></div>
+      </div>
+
+      <label id="dropArea" class="drop" tabindex="0">
+        <input id="fileInput" type="file" style="display:none" multiple accept="image/*" />
+        <div>Click or drop images here</div>
+        <div style="font-size:12px;color:#205070;margin-top:6px;">Supported: JPEG, PNG, WebP.</div>
+      </label>
+
+      <div class="thumb" id="thumb">
+        <div style="text-align:center;color:rgba(8,40,80,0.24)">
+          <div style="font-size:28px">🖼️</div>
+          <div class="filemeta">No image uploaded</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div style="display:flex;gap:12px">
+        <button id="compressBtn" class="btn">Compress Images</button>
+        <button id="resetBtn" class="btn secondary">Reset</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat" id="origStat">Original: —</div>
+        <div class="stat" id="newStat">Compressed: —</div>
+        <div class="stat" id="ratioStat">Ratio: —</div>
+      </div>
+
+      <div id="downloadArea"></div>
+      <button id="downloadAllBtn" class="btn">Download All as ZIP</button>
+
+      <footer>All processing stays in your browser</footer>
+    </div>
+  </div>
+
+  <!-- Load JSZip from local file -->
+  <script src="jszip.min.js"></script>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const dropArea = document.getElementById('dropArea');
+    const thumb = document.getElementById('thumb');
+    const compressBtn = document.getElementById('compressBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const origStat = document.getElementById('origStat');
+    const newStat = document.getElementById('newStat');
+    const ratioStat = document.getElementById('ratioStat');
+    const downloadArea = document.getElementById('downloadArea');
+    const downloadAllBtn = document.getElementById('downloadAllBtn');
+
+    let images = [];
+    let compressedImages = [];
+
+    ['dragenter','dragover'].forEach(ev => dropArea.addEventListener(ev, e => { 
+      e.preventDefault(); 
+      dropArea.style.borderColor = 'rgba(11,102,178,0.3)'; 
+    }));
+
+    dropArea.addEventListener('dragleave', e => { 
+      e.preventDefault(); 
+      dropArea.style.borderColor = 'rgba(8,40,80,0.06)'; 
+    });
+
+    dropArea.addEventListener('drop', e => { 
+      e.preventDefault(); 
+      dropArea.style.borderColor = 'rgba(8,40,80,0.06)'; 
+      if (e.dataTransfer.files.length) handleFiles([...e.dataTransfer.files]); 
+    });
+
+    dropArea.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => { 
+      if (fileInput.files.length) handleFiles([...fileInput.files]); 
+    });
+
+    resetBtn.addEventListener('click', resetAll);
+    compressBtn.addEventListener('click', () => { 
+      if (!images.length) return alert('Choose images first'); 
+      compressAllImages(); 
+    });
+
+    downloadAllBtn.addEventListener('click', downloadAllAsZip);
+
+    function resetAll() {
+      images = [];
+      compressedImages = [];
+      thumb.innerHTML = '<div style="text-align:center;color:rgba(8,40,80,0.24)"><div style="font-size:28px">🖼️</div><div class="filemeta">No image uploaded</div></div>';
+      origStat.textContent = 'Original: —';
+      newStat.textContent = 'Compressed: —';
+      ratioStat.textContent = 'Ratio: —';
+      downloadArea.style.display = 'none';
+      downloadArea.innerHTML = '';
+      downloadAllBtn.style.display = 'none';
+      fileInput.value = '';
+    }
+
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024, sizes = ['B','KB','MB','GB','TB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function handleFiles(files) {
+      resetAll();
+      images = files.filter(f => /^image\//.test(f.type));
+      if (!images.length) return;
+      thumb.innerHTML = '';
+      images.forEach(f => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'thumb-item';
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(f);
+        img.alt = f.name;
+        img.title = f.name;
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay';
+        overlay.textContent = 'Original: ' + formatBytes(f.size);
+        wrapper.appendChild(img);
+        wrapper.appendChild(overlay);
+        thumb.appendChild(wrapper);
+      });
+    }
+
+    async function compressAllImages() {
+      downloadArea.innerHTML = '';
+      compressedImages = [];
+      let origTotal = 0, compTotal = 0;
+
+      for (let i = 0; i < images.length; i++) {
+        const file = images[i];
+        origTotal += file.size;
+        const compressed = await compressImageToWebP(file);
+        compTotal += compressed.blob.size;
+        compressedImages.push(compressed);
+
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(compressed.blob);
+        a.download = compressed.name;
+        a.textContent = `Download: ${compressed.name} (${formatBytes(compressed.blob.size)})`;
+        a.className = 'btn';
+        downloadArea.appendChild(a);
+
+        const overlay = thumb.children[i].querySelector('.overlay');
+        overlay.textContent = formatBytes(compressed.blob.size);
+      }
+
+      origStat.textContent = 'Original: ' + formatBytes(origTotal);
+      newStat.textContent = 'Compressed: ' + formatBytes(compTotal);
+      ratioStat.textContent = 'Ratio: ' + ((compTotal / origTotal) * 100).toFixed(1) + '%';
+
+      downloadArea.style.display = 'flex';
+      downloadAllBtn.style.display = 'inline-block';
+    }
+
+    async function compressImageToWebP(file) {
+      const img = await loadImage(URL.createObjectURL(file));
+
+      const canvas = document.createElement('canvas');
+      const MAX_DIM = 1920;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      let scale = Math.max(w, h) > MAX_DIM ? (MAX_DIM / Math.max(w, h)) : 1;
+
+      canvas.width = Math.round(w * scale);
+      canvas.height = Math.round(h * scale);
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      const blobOut = await new Promise(res => canvas.toBlob(res, "image/webp", 0.82));
+      const outName = file.name.replace(/\.[^.]+$/, "") + ".webp";
+
+      return { blob: blobOut, name: outName };
+    }
+
+    function loadImage(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error("Image load error"));
+        img.src = src;
+      });
+    }
+
+    async function downloadAllAsZip() {
+      if (!compressedImages.length) return alert("No images to ZIP");
+
+      const zip = new JSZip();
+      compressedImages.forEach(item => zip.file(item.name, item.blob));
+
+      const blob = await zip.generateAsync({ type: "blob" });
+
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "compressed_images.zip";
+      a.click();
+    }
+  </script>
+</body>
+</html>
