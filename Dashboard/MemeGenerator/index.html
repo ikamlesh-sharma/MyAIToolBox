@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meme Generator Ultra Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body {
+    background:#cfe8ff;
+    color:#e5e7eb;
+    font-family:system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    padding:16px;
+  }
+  .container {
+    max-width:1300px;
+    margin:0 auto;
+    background:#111827;
+    border-radius:16px;
+    padding:16px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.6);
+    border:1px solid #1f2937;
+  }
+  h1 {
+    text-align:center;
+    margin-bottom:16px;
+    font-size:1.5rem;
+  }
+  label {
+    display:block;
+    margin-top:10px;
+    font-size:0.85rem;
+  }
+  input[type="text"], select, input[type="file"] {
+    width:100%;
+    padding:7px 9px;
+    margin-top:4px;
+    background:#020617;
+    color:#e5e7eb;
+    border-radius:8px;
+    border:1px solid #374151;
+    font-size:0.85rem;
+  }
+  input[type="color"] {
+    width:100%;
+    height:32px;
+    border-radius:8px;
+    border:1px solid #374151;
+    background:#020617;
+    margin-top:4px;
+  }
+  button {
+    padding:8px 14px;
+    margin-top:8px;
+    border:none;
+    border-radius:999px;
+    cursor:pointer;
+    font-size:0.85rem;
+    background:linear-gradient(135deg,#4f46e5,#06b6d4);
+    color:white;
+    margin-right:6px;
+  }
+  button.secondary {
+    background:#020617;
+    border:1px solid #4b5563;
+  }
+  .flex {
+    display:flex;
+    gap:18px;
+    flex-wrap:wrap;
+  }
+  .sidebar {
+    flex:1 1 280px;
+  }
+  .canvas-box {
+    flex:1 1 420px;
+    background:#ffffff;
+    border-radius:14px;
+    padding:10px;
+    text-align:center;
+    border:1px solid #1f2937;
+  }
+  #canvas {
+    background:#000;
+    border-radius:8px;
+    max-width:100%;
+    touch-action:none;
+    cursor:crosshair;
+  }
+  .section-title {
+    margin-top:14px;
+    margin-bottom:4px;
+    font-size:0.85rem;
+    font-weight:600;
+    color:#9ca3af;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+  }
+  .sticker-list {
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:4px;
+  }
+  .sticker-item {
+    font-size:26px;
+    padding:4px 8px;
+    border-radius:8px;
+    background:#020617;
+    border:1px solid #374151;
+    cursor:pointer;
+  }
+  .slider-row {
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:0.8rem;
+  }
+  .slider-row input[type="range"] {
+    flex:1;
+  }
+  .row-buttons {
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>Meme Generator Ultra Pro</h1>
+
+  <div class="flex">
+    <div class="sidebar">
+      <label>Upload Image</label>
+      <input type="file" id="imageInput" accept="image/*">
+
+      <label>Meme Style</label>
+      <select id="memeStyle">
+        <option value="classic">Classic Top / Bottom</option>
+        <option value="caption">Bottom Caption Bar</option>
+      </select>
+
+      <label>Top Text</label>
+      <input type="text" id="topText">
+
+      <label>Bottom Text</label>
+      <div class="row-buttons">
+        <input type="text" id="bottomText" style="flex:1;">
+        <button id="aiCaptionBtn" class="secondary">AI Caption</button>
+      </div>
+
+      <div class="section-title">Draggable Text</div>
+      <button id="addTextBtn">Add Text</button>
+
+      <label>Color</label>
+      <input type="color" id="textColor" value="#ffffff">
+
+      <label>Font</label>
+      <select id="textFont">
+        <option value="Impact">Impact</option>
+        <option value="Arial">Arial</option>
+        <option value="Comic Sans MS">Comic Sans</option>
+        <option value="Georgia">Georgia</option>
+      </select>
+
+      <div class="slider-row">
+        <span>Size</span>
+        <input type="range" id="textSize" min="18" max="150" value="48">
+      </div>
+
+      <div class="section-title">Stickers</div>
+      <button id="addStickerImage" class="secondary">Add Image Sticker</button>
+
+      <div class="sticker-list" id="stickers">
+        <span class="sticker-item">😂</span>
+        <span class="sticker-item">🔥</span>
+        <span class="sticker-item">💀</span>
+        <span class="sticker-item">🤯</span>
+        <span class="sticker-item">😎</span>
+        <span class="sticker-item">⭐</span>
+      </div>
+
+      <div class="section-title">Filters</div>
+      <div class="slider-row"><span>B</span><input type="range" id="brightness" min="0" max="200" value="100"></div>
+      <div class="slider-row"><span>C</span><input type="range" id="contrast" min="0" max="200" value="100"></div>
+      <div class="slider-row"><span>S</span><input type="range" id="saturation" min="0" max="200" value="100"></div>
+      <div class="slider-row"><span>Blur</span><input type="range" id="blur" min="0" max="12" value="0"></div>
+
+      <div class="section-title">Crop</div>
+      <button id="startCrop" class="secondary">Start Crop</button>
+      <button id="resetCrop" class="secondary">Reset Crop</button>
+
+      <div class="section-title">History</div>
+      <button id="undoBtn" class="secondary">Undo</button>
+      <button id="redoBtn" class="secondary">Redo</button>
+
+      <div class="section-title">Export</div>
+      <button id="downloadBtn">Download PNG</button>
+    </div>
+
+    <div class="canvas-box">
+      <canvas id="canvas" width="700" height="700"></canvas>
+      <p style="font-size:12px;color:#9ca3af;">Drag items. Resize text via blue square.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============= JAVASCRIPT ENGINE (BACKGROUND REMOVAL REMOVED) ============= */
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const baseCanvas = document.createElement("canvas");
+const baseCtx = baseCanvas.getContext("2d");
+baseCanvas.width = canvas.width;
+baseCanvas.height = canvas.height;
+
+let uploadedImage = null;
+let draggableItems = [];
+let selectedItem = null;
+
+// Undo/Redo
+let undoStack = [];
+let redoStack = [];
+
+// Crop variables
+let isCropping = false;
+let cropStart = null;
+let cropCurrent = null;
+let cropRect = null;
+
+// Drag/Resize
+let isDraggingItem = false;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+let isResizingItem = false;
+let resizeStartY = 0;
+let originalSize = 0;
+
+// DOM elements
+const imageInput = document.getElementById("imageInput");
+const memeStyle = document.getElementById("memeStyle");
+const topTextInput = document.getElementById("topText");
+const bottomTextInput = document.getElementById("bottomText");
+const aiCaptionBtn = document.getElementById("aiCaptionBtn");
+const addTextBtn = document.getElementById("addTextBtn");
+const textColorInput = document.getElementById("textColor");
+const textFontSelect = document.getElementById("textFont");
+const textSizeSlider = document.getElementById("textSize");
+const stickersContainer = document.getElementById("stickers");
+const addStickerImageBtn = document.getElementById("addStickerImage");
+const brightnessSlider = document.getElementById("brightness");
+const contrastSlider = document.getElementById("contrast");
+const saturationSlider = document.getElementById("saturation");
+const blurSlider = document.getElementById("blur");
+const startCropBtn = document.getElementById("startCrop");
+const resetCropBtn = document.getElementById("resetCrop");
+const undoBtn = document.getElementById("undoBtn");
+const redoBtn = document.getElementById("redoBtn");
+const downloadBtn = document.getElementById("downloadBtn");
+
+/* Utility: Clone State */
+function cloneState() {
+  return {
+    draggableItems: draggableItems.map(it => ({...it})),
+    cropRect: cropRect ? {...cropRect} : null
+  };
+}
+
+function restoreState(state) {
+  draggableItems = state.draggableItems.map(it => ({...it}));
+  cropRect = state.cropRect ? {...state.cropRect} : null;
+}
+
+/* Undo/Redo management */
+function pushUndo() {
+  undoStack.push(cloneState());
+  redoStack = [];
+}
+
+undoBtn.onclick = () => {
+  if (!undoStack.length) return;
+  redoStack.push(cloneState());
+  restoreState(undoStack.pop());
+  renderMeme();
+};
+
+redoBtn.onclick = () => {
+  if (!redoStack.length) return;
+  undoStack.push(cloneState());
+  restoreState(redoStack.pop());
+  renderMeme();
+};
+
+/* Image Upload */
+imageInput.onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      uploadedImage = img;
+      pushUndo();
+      renderMeme();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+/* Apply filters + style changes */
+[memeStyle, topTextInput, bottomTextInput].forEach(el => {
+  el.oninput = renderMeme;
+});
+
+[brightnessSlider, contrastSlider, saturationSlider, blurSlider]
+.forEach(el => {
+  el.oninput = renderMeme;
+});
+
+/* Draw Base Image (NO BG REMOVAL ANYMORE) */
+function drawBaseImage() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if (!uploadedImage) return;
+
+  baseCtx.clearRect(0,0,baseCanvas.width,baseCanvas.height);
+  baseCtx.save();
+
+  baseCtx.filter =
+    `brightness(${brightnessSlider.value}%) `+
+    `contrast(${contrastSlider.value}%) `+
+    `saturate(${saturationSlider.value}%) `+
+    `blur(${blurSlider.value}px)`;
+
+  const iw = uploadedImage.width;
+  const ih = uploadedImage.height;
+  const cw = baseCanvas.width;
+  const ch = baseCanvas.height;
+  const scale = Math.min(cw/iw, ch/ih);
+  const w = iw * scale;
+  const h = ih * scale;
+  const dx = (cw - w) / 2;
+  const dy = (ch - h) / 2;
+
+  baseCtx.drawImage(uploadedImage, dx, dy, w, h);
+  baseCtx.restore();
+
+  if (cropRect){
+    const sx = cropRect.x * baseCanvas.width;
+    const sy = cropRect.y * baseCanvas.height;
+    const sw = cropRect.w * baseCanvas.width;
+    const sh = cropRect.h * baseCanvas.height;
+    ctx.drawImage(baseCanvas,sx,sy,sw,sh,0,0,canvas.width,canvas.height);
+  }
+  else ctx.drawImage(baseCanvas,0,0);
+}
+
+/* Caption Rendering */
+function drawCaptionText() {
+  const cw = canvas.width;
+  const ch = canvas.height;
+
+  const top = topTextInput.value.trim();
+  const bottom = bottomTextInput.value.trim();
+
+  if (memeStyle.value === "classic") {
+    ctx.font = "bold 50px Impact";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = "#000";
+    ctx.fillStyle = "#fff";
+
+    if (top) {
+      ctx.strokeText(top.toUpperCase(), cw/2, 60);
+      ctx.fillText(top.toUpperCase(), cw/2, 60);
+    }
+    if (bottom) {
+      ctx.strokeText(bottom.toUpperCase(), cw/2, ch-50);
+      ctx.fillText(bottom.toUpperCase(), cw/2, ch-50);
+    }
+  }
+
+  if (memeStyle.value === "caption") {
+    if (bottom) {
+      ctx.fillStyle="rgba(0,0,0,0.75)";
+      ctx.fillRect(0,ch-140,cw,140);
+
+      ctx.font = "bold 50px Impact";
+      ctx.strokeStyle="#000";
+      ctx.fillStyle="#fff";
+      ctx.lineWidth=6;
+      ctx.textAlign="center";
+      ctx.textBaseline="middle";
+
+      ctx.strokeText(bottom.toUpperCase(), cw/2, ch-70);
+      ctx.fillText(bottom.toUpperCase(), cw/2, ch-70);
+    }
+  }
+}
+
+/* Draggable + Resize Items */
+function getItemBoundingBox(item) {
+  if (item.type === "text") {
+    ctx.font = `bold ${item.size}px ${item.font}`;
+    const width = ctx.measureText(item.text).width;
+    return {
+      x: item.x - width/2 - 4,
+      y: item.y - item.size/2 - 4,
+      w: width + 8,
+      h: item.size + 8
+    };
+  }
+  if (item.type === "sticker") {
+    return {x:item.x-item.size/2, y:item.y-item.size/2, w:item.size, h:item.size};
+  }
+  if (item.type === "imageSticker") {
+    return {x:item.x-item.w/2, y:item.y-item.h/2, w:item.w, h:item.h};
+  }
+  return {x:item.x-20,y:item.y-20,w:40,h:40};
+}
+
+function hitTest(x,y){
+  for (let i=draggableItems.length-1;i>=0;i--){
+    const b=getItemBoundingBox(draggableItems[i]);
+    if(x>=b.x && x<=b.x+b.w && y>=b.y && y<=b.y+b.h) return draggableItems[i];
+  }
+  return null;
+}
+
+function drawDraggables() {
+  draggableItems.forEach(item=>{
+    if (item.type==="text"){
+      ctx.font = `bold ${item.size}px ${item.font}`;
+      ctx.textAlign="center";
+      ctx.textBaseline="middle";
+      ctx.fillStyle=item.color;
+      ctx.fillText(item.text,item.x,item.y);
+    }
+    else if (item.type==="sticker"){
+      ctx.font = `${item.size}px system-ui`;
+      ctx.fillText(item.emoji,item.x,item.y);
+    }
+    else if (item.type==="imageSticker"){
+      ctx.drawImage(item.img, item.x-item.w/2, item.y-item.h/2, item.w, item.h);
+    }
+  });
+
+  if(selectedItem){
+    const b=getItemBoundingBox(selectedItem);
+    ctx.strokeStyle="#38bdf8";
+    ctx.lineWidth=2;
+    ctx.setLineDash([6,4]);
+    ctx.strokeRect(b.x,b.y,b.w,b.h);
+
+    if(selectedItem.type==="text"){
+      ctx.setLineDash([]);
+      ctx.fillStyle="#38bdf8";
+      ctx.fillRect(b.x+b.w-8, b.y+b.h-8, 10,10);
+    }
+  }
+}
+
+/* Render */
+function renderMeme() {
+  drawBaseImage();
+  drawCaptionText();
+  drawDraggables();
+
+  if(isCropping && cropStart && cropCurrent){
+    ctx.strokeStyle="#22c55e";
+    ctx.lineWidth=2;
+    ctx.setLineDash([6,4]);
+
+    const x=Math.min(cropStart.x,cropCurrent.x);
+    const y=Math.min(cropStart.y,cropCurrent.y);
+    const w=Math.abs(cropCurrent.x-cropStart.x);
+    const h=Math.abs(cropCurrent.y-cropStart.y);
+
+    ctx.strokeRect(x,y,w,h);
+  }
+}
+
+/* Add Text */
+addTextBtn.onclick = () => {
+  const item={
+    type:"text",
+    text:"New Text",
+    x:canvas.width/2,
+    y:canvas.height/2,
+    color:textColorInput.value,
+    font:textFontSelect.value,
+    size:parseInt(textSizeSlider.value,10)
+  };
+  pushUndo();
+  draggableItems.push(item);
+  selectedItem=item;
+  renderMeme();
+};
+
+/* Text Controls */
+textColorInput.oninput = () => {
+  if(selectedItem?.type==="text"){
+    selectedItem.color=textColorInput.value;
+    renderMeme();
+  }
+};
+
+textFontSelect.onchange = () => {
+  if(selectedItem?.type==="text"){
+    selectedItem.font=textFontSelect.value;
+    renderMeme();
+  }
+};
+
+textSizeSlider.oninput = () => {
+  if(selectedItem?.type==="text"){
+    selectedItem.size=parseInt(textSizeSlider.value,10);
+    renderMeme();
+  }
+};
+
+/* Emoji Stickers */
+stickersContainer.onclick = e => {
+  if(!e.target.classList.contains("sticker-item")) return;
+  const item={
+    type:"sticker",
+    emoji:e.target.textContent,
+    x:canvas.width/2,
+    y:canvas.height/2,
+    size:60
+  };
+  pushUndo();
+  draggableItems.push(item);
+  selectedItem=item;
+  renderMeme();
+};
+
+/* Image Sticker */
+addStickerImageBtn.onclick = () => {
+  const input=document.createElement("input");
+  input.type="file";
+  input.accept="image/*";
+
+  input.onchange = e => {
+    const file=e.target.files[0];
+    const reader=new FileReader();
+    reader.onload = ev => {
+      const img=new Image();
+      img.onload = () => {
+        const item={
+          type:"imageSticker",
+          img,
+          x:canvas.width/2,
+          y:canvas.height/2,
+          w:160,
+          h:160
+        };
+        pushUndo();
+        draggableItems.push(item);
+        selectedItem=item;
+        renderMeme();
+      };
+      img.src=ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  input.click();
+};
+
+/* Drag + Resize */
+canvas.onmousedown = e => {
+  const r=canvas.getBoundingClientRect();
+  const x=e.clientX-r.left;
+  const y=e.clientY-r.top;
+
+  if(isCropping){
+    cropStart={x,y};
+    cropCurrent={x,y};
+    renderMeme();
+    return;
+  }
+
+  if(selectedItem?.type==="text"){
+    const b=getItemBoundingBox(selectedItem);
+    if(x>=b.x+b.w-10 && x<=b.x+b.w && y>=b.y+b.h-10 && y<=b.y+b.h){
+      isResizingItem=true;
+      resizeStartY=y;
+      originalSize=selectedItem.size;
+      pushUndo();
+      return;
+    }
+  }
+
+  const hit=hitTest(x,y);
+  if(hit){
+    selectedItem=hit;
+    isDraggingItem=true;
+    dragOffsetX=x-hit.x;
+    dragOffsetY=y-hit.y;
+    pushUndo();
+
+    if(hit.type==="text"){
+      textColorInput.value=hit.color;
+      textFontSelect.value=hit.font;
+      textSizeSlider.value=hit.size;
+    }
+  }
+  else selectedItem=null;
+
+  renderMeme();
+};
+
+canvas.onmousemove = e => {
+  const r=canvas.getBoundingClientRect();
+  const x=e.clientX-r.left;
+  const y=e.clientY-r.top;
+
+  if(isCropping && cropStart){
+    cropCurrent={x,y};
+    renderMeme();
+    return;
+  }
+
+  if(isResizingItem && selectedItem?.type==="text"){
+    const dy=y-resizeStartY;
+    let newSize=originalSize+dy*0.5;
+    newSize=Math.max(16,Math.min(200,newSize));
+    selectedItem.size=newSize;
+    textSizeSlider.value=newSize;
+    renderMeme();
+    return;
+  }
+
+  if(isDraggingItem && selectedItem){
+    selectedItem.x=x-dragOffsetX;
+    selectedItem.y=y-dragOffsetY;
+    renderMeme();
+  }
+};
+
+canvas.onmouseup = () => {
+  isDraggingItem=false;
+  isResizingItem=false;
+
+  if(isCropping && cropStart && cropCurrent){
+    const x=Math.min(cropStart.x,cropCurrent.x);
+    const y=Math.min(cropStart.y,cropCurrent.y);
+    const w=Math.abs(cropCurrent.x-cropStart.x);
+    const h=Math.abs(cropCurrent.y-cropStart.y);
+
+    if(w>10 && h>10){
+      cropRect={
+        x:x/canvas.width,
+        y:y/canvas.height,
+        w:w/canvas.width,
+        h:h/canvas.height
+      };
+      pushUndo();
+    }
+    isCropping=false;
+    cropStart=null;
+    cropCurrent=null;
+    renderMeme();
+  }
+};
+
+canvas.onmouseleave = () => {
+  isDraggingItem=false;
+  isResizingItem=false;
+};
+
+/* Double click edit text */
+canvas.ondblclick = e => {
+  const r=canvas.getBoundingClientRect();
+  const x=e.clientX-r.left;
+  const y=e.clientY-r.top;
+
+  const hit=hitTest(x,y);
+  if(hit?.type==="text"){
+    const t=prompt("Edit text:",hit.text);
+    if(t!==null){
+      pushUndo();
+      hit.text=t;
+      renderMeme();
+    }
+  }
+};
+
+/* Crop */
+startCropBtn.onclick = () => {
+  isCropping=true;
+  cropStart=null;
+  cropCurrent=null;
+  renderMeme();
+};
+
+resetCropBtn.onclick = () => {
+  if(cropRect) pushUndo();
+  cropRect=null;
+  isCropping=false;
+  cropStart=null;
+  cropCurrent=null;
+  renderMeme();
+};
+
+/* AI caption */
+aiCaptionBtn.onclick = () => {
+  const ideas=[
+     "WHEN MONDAY HITS TOO HARD",
+    "UPGRADE COMPLETE",
+    "MOOD: BUFFERING...",
+    "I WAS NOT READY FOR THIS",
+    "RESTARTING IN 3…2…1…",
+    "MAIN CHARACTER ENERGY",
+    "PROCESSING REQUEST...",
+    "TRUST ME I GOT THIS",
+    "THIS IS MY FINAL FORM",
+
+    "SYSTEM OVERLOADED, PLEASE WAIT",
+    "AI BUT MAKE IT CUTE",
+    "RUNNING ON LOW POWER MODE",
+    "UPGRADING PERSONALITY…",
+    "CURRENTLY REWRITING MY CODE",
+    "GLITCH BUT MAKE IT AESTHETIC",
+    "NOT A BUG, A FEATURE",
+    "DOWNLOADING CONFIDENCE...",
+    "ERROR 404: SLEEP NOT FOUND",
+    "BRAIN RESTART REQUIRED",
+    "SAVING ENERGY FOR BETTER DAYS",
+    "UPDATE IN PROGRESS...",
+    "VIBING AT 100% CPU USAGE",
+    "TOO MANY TABS OPEN",
+    "MY MOOD NEEDS A PATCH UPDATE",
+    "PLEASE DO NOT DISTURB — PROCESSING",
+    "EMOTIONS NOT INCLUDED",
+    "JUST A SMALL GLITCH IN THE MATRIX",
+    "IF FOUND, REBOOT ME",
+    "MY BRAIN SAID 'NO SIGNAL'",
+    "SILENT MODE: ON",
+    "DATA LOADING, PLEASE HOLD",
+    "REWRITING MY DESTINY...",
+    "MY VIBES GOT AN UPGRADE",
+    "IN MY DIGITAL ERA",
+    "RECHARGING SOCIAL BATTERY...",
+    "I AM NOW ONLINE",
+    "SIMULATION RUNNING SMOOTHLY",
+    "REALITY CHECK FAILED",
+    "MY ENERGY IS 1% — NO CHARGER",
+    "RUNNING ON SNACKS",
+    "LOW BATTERY, HIGH DRAMA",
+    "CHARGING MY ATTITUDE...",
+    "REBOOTING MY WEEK",
+    "NEW DAY, SAME CODE",
+    "MY SETTINGS ARE ON ‘DO NOT CARE’",
+    "FILTERING NEGATIVE VIBES...",
+    "UPGRADE FAILED — TRY AGAIN",
+    "SILENT BUT POWERFUL",
+    "WE’RE ALL JUST NPCs SOMETIMES",
+    "DOWNLOADING HAPPINESS...",
+    "SCANNING FOR GOOD VIBES ONLY",
+    "CURRENTLY BUFFERING THROUGH LIFE",
+    "JUST FOLLOWING MY ALGORITHM",
+    "ERROR: TRUST LEVEL TOO LOW",
+    "DELETE STRESS.EXE",
+    "MOOD SET TO: UNBOTHERED",
+    "MY WIFI SIGNAL IS BETTER THAN MY LIFE SIGNAL",
+    "RUNNING IN BACKGROUND MODE"
+  ];
+  bottomTextInput.value=ideas[Math.floor(Math.random()*ideas.length)];
+  renderMeme();
+};
+
+/* PNG Export */
+downloadBtn.onclick = () => {
+  const a=document.createElement("a");
+  a.href=canvas.toDataURL("image/png");
+  a.download="meme.png";
+  a.click();
+};
+
+renderMeme();
+</script>
+<div style="
+  position:fixed;
+  bottom:10px;
+  left:0;
+  width:100%;
+  text-align:center;
+  font-size:0.75rem;
+  color:#9ca3af;
+  opacity:0.7;
+  pointer-events:none;
+">
+  © 2025 Meme Generator Ultra Pro
+</div>
+
+</body>
+</html>
