@@ -1,0 +1,1972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MyAIToolBox – Clean Blank Poster Designer</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      min-height:100vh;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:linear-gradient(135deg,#f9fafb,#e5e7eb);
+      display:flex;align-items:flex-start;justify-content:center;
+      padding:20px;color:#111827;
+    }
+    .app-shell{
+      max-width:1300px;width:100%;
+      display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.1fr);
+      gap:24px;background:rgba(255,255,255,0.98);border-radius:24px;
+      padding:24px;
+      box-shadow:0 18px 40px rgba(15,23,42,.18),0 0 0 1px rgba(148,163,184,.35);
+      position:relative;
+    }
+    @media(max-width:900px){
+      .app-shell{grid-template-columns:minmax(0,1fr)}
+    }
+    .left-panel,.right-panel{display:flex;flex-direction:column;gap:16px}
+    .app-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .title-block{display:flex;flex-direction:column;gap:4px}
+    .app-title{font-size:1.4rem;font-weight:700;letter-spacing:.03em;display:inline-flex;align-items:center;gap:8px}
+    .badge{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;padding:2px 8px;border-radius:999px;
+      background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.5);color:#1d4ed8}
+    .subtitle{font-size:.85rem;color:#6b7280}
+    .pill{padding:8px 12px;border-radius:999px;
+      background:rgba(248,250,252,.95);
+      border:1px solid rgba(209,213,219,.9);font-size:.75rem;color:#374151;
+      display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+    .pill-dot{width:6px;height:6px;border-radius:999px;background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.25)}
+
+    .field-group{display:flex;flex-direction:column;gap:6px}
+    .field-group-row{display:flex;flex-wrap:wrap;gap:10px}
+    label{font-size:.9rem;color:#111827;display:flex;align-items:center;gap:6px}
+    label span.icon{font-size:1rem}
+
+    select,input[type=text],input[type=number],textarea,input[type=color],input[type=range]{
+      width:100%;border-radius:10px;border:1px solid rgba(209,213,219,.95);
+      background:#f9fafb;color:#111827;
+      padding:7px 9px;font-size:.85rem;outline:none;
+      transition:border .18s,box-shadow .18s,background .18s,transform .08s;
+    }
+    input[type=color]{padding:0;height:32px}
+    #textColorInput{
+      width:48px;min-width:48px;padding:0;
+      border-radius:8px;
+    }
+    input[type=range]{padding:0;background:transparent}
+    select:focus,input:focus,textarea:focus{
+      border-color:#3b82f6;
+      box-shadow:0 0 0 1px rgba(59,130,246,.35),0 0 0 8px rgba(59,130,246,.08);
+      background:#ffffff;transform:translateY(-1px);
+    }
+    textarea{min-height:80px;resize:vertical}
+    .helper-text{font-size:.78rem;color:#6b7280}
+    .small-label{font-size:.75rem;color:#6b7280}
+    .button-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+    button{
+      border:none;cursor:pointer;font-size:.9rem;border-radius:999px;
+      padding:9px 16px;display:inline-flex;align-items:center;justify-content:center;
+      gap:8px;font-weight:500;letter-spacing:.02em;
+      transition:transform .08s,box-shadow .12s,filter .12s,background .15s;white-space:nowrap;
+    }
+    button:active{transform:translateY(1px) scale(.99);box-shadow:none;filter:brightness(.96)}
+    .btn-primary{
+      background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;
+      box-shadow:0 12px 24px rgba(59,130,246,.35);
+    }
+    .btn-secondary{
+      background:#111827;color:#f9fafb;
+      border:1px solid rgba(15,23,42,.85);box-shadow:0 10px 20px rgba(15,23,42,.35);
+    }
+    .btn-ghost{background:transparent;color:#374151;border:1px dashed rgba(156,163,175,.9)}
+    button[disabled]{opacity:.55;cursor:not-allowed;box-shadow:none}
+
+    .format-toggle{display:inline-flex;padding:4px;border-radius:999px;
+      background:#f3f4f6;border:1px solid rgba(209,213,219,.95);gap:4px}
+    .format-toggle button{flex:1;padding:6px 10px;font-size:.78rem;border-radius:999px;background:transparent;border:none;color:#6b7280;box-shadow:none}
+    .format-toggle button.active{background:#e0f2fe;color:#0369a1;border:1px solid rgba(56,189,248,.8)}
+
+    .status-bar{margin-top:4px;font-size:.78rem;color:#6b7280;display:flex;align-items:center;gap:6px}
+    .status-dot{width:7px;height:7px;border-radius:999px;background:#9ca3af}
+    .status-dot.active{background:#22c55e}
+    .tiny{font-size:.7rem;color:#9ca3af}
+
+    .right-panel{display:flex;flex-direction:column;gap:16px;position:relative}
+    
+    
+.preview-card {
+    flex: 1;
+    border-radius: 20px;
+    background: #f9fafb;
+    border: 1px solid rgba(209,213,219,.95);
+    box-shadow: 0 18px 30px rgba(15,23,42,.16);
+    padding: 14px 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: sticky;
+    top: 12px;
+    height: calc(100vh - 10px);
+    max-height: calc(100vh - 10px);
+    overflow: hidden;
+}
+
+
+    .preview-header{display:flex;align-items:center;justify-content:space-between;font-size:.8rem;color:#6b7280}
+    .preview-badges{display:flex;gap:6px;flex-wrap:wrap}
+    .preview-tag{padding:3px 8px;border-radius:999px;border:1px solid rgba(209,213,219,.95);background:#ffffff}
+
+    
+    
+.canvas-wrapper {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #020617;
+    border-radius: 18px;
+    overflow: hidden;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+
+    
+	
+    
+canvas{
+    width:100%;
+    height:auto;
+    max-width:100%;
+    max-height:100%;
+    object-fit:contain;
+    border-radius:18px;
+    cursor:move;
+}
+
+
+
+
+    .mode-radio-group{display:flex;gap:12px;flex-wrap:wrap;font-size:.85rem}
+    .mode-radio-group label{gap:4px}
+    input[type=file]{font-size:.78rem}
+
+    .range-row{display:flex;align-items:center;gap:8px}
+    .range-row span{font-size:.75rem;color:#6b7280;white-space:nowrap}
+    .two-col{display:flex;gap:8px;flex-wrap:wrap}
+    .two-col > div{flex:1;min-width:120px}
+  
+/* Patch: remove preview header cleanly */
+.preview-card { padding-top: 0 !important; }
+.preview-header { display:none!important; height:0!important; margin:0!important; padding:0!important; }
+
+</style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+      <div class="app-header">
+        <div class="title-block">
+          <div class="app-title">
+            MyAIToolBox
+            <span class="badge">Blank Poster Designer</span>
+          </div>
+          <div class="subtitle">
+            Design from a blank canvas or edit an existing poster. Add background, text, icons, images & borders – Canva-style, fully in browser.
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+          <div class="pill">
+            <span class="pill-dot"></span>
+            <span>All in browser · No backend</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1. MODE -->
+      <div class="field-group">
+        <label><span class="icon">🧾</span><span>1. Mode</span></label>
+        <div class="mode-radio-group">
+          <label><input type="radio" name="mode" value="create" checked> Blank / designed here</label>
+          <label><input type="radio" name="mode" value="edit"> Edit existing poster (upload)</label>
+        </div>
+        <div id="editUploadWrapper" style="display:none;margin-top:6px;">
+          <input type="file" id="existingPosterInput" accept="image/*">
+          <div class="helper-text">Upload JPG/PNG. It becomes the background; you can still add text, icons, images & border.</div>
+        </div>
+      </div>
+
+      <!-- 2. CANVAS & BACKGROUND -->
+      <div class="field-group">
+        <label><span class="icon">🎨</span><span>2. Canvas & background</span></label>
+        <div class="two-col">
+          <div>
+            <div class="small-label">Poster size</div>
+            <select id="sizeSelect">
+              <option value="portrait">Portrait (1080 × 1350)</option>
+              <option value="square">Square (1080 × 1080)</option>
+              <option value="landscape">Landscape (1920 × 1080)</option>
+              <option value="custom">Custom…</option>
+            </select>
+          </div>
+          <div>
+            <div class="small-label">Background style</div>
+            <select id="backgroundTypeSelect">
+              <option value="solid">Solid color</option>
+              <option value="linear">Linear gradient</option>
+              <option value="radial">Radial gradient</option>
+            </select>
+          </div>
+        </div>
+        <div class="two-col" id="customSizeRow" style="display:none;margin-top:6px;">
+          <div>
+            <div class="small-label">Custom width</div>
+            <input type="number" id="customWidth" min="400" max="2500" value="1080">
+          </div>
+          <div>
+            <div class="small-label">Custom height</div>
+            <input type="number" id="customHeight" min="400" max="2500" value="1350">
+          </div>
+        </div>
+        <div class="two-col" style="margin-top:6px;">
+          <div>
+            <div class="small-label">Color 1</div>
+            <input type="color" id="bgColor1" value="#ffffff">
+          </div>
+          <div>
+            <div class="small-label">Color 2 (for gradient)</div>
+            <input type="color" id="bgColor2" value="#e5e7eb">
+          </div>
+        </div>
+        <div class="helper-text">
+          Choose size and background colors. For gradients, both colors are used; for solid, only Color 1 is used.
+        </div>
+      </div>
+
+      <!-- 3. TEXT -->
+      <div class="field-group">
+        <label><span class="icon">✏️</span><span>3. Text blocks (Title, Body, Footer)</span></label>
+        <div class="field-group-row">
+          <div style="flex:1;min-width:140px;">
+            <div class="small-label">Active text block</div>
+            <select id="activeTextSelect">
+              <option value="title">Title</option>
+              <option value="body">Body</option>
+              <option value="footer">Footer</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:160px;">
+            <div class="small-label">Font family</div>
+            <select id="fontFamilySelect">
+              <option value="system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Modern Sans (default)</option>
+              <option value="'Arial',sans-serif">Arial</option>
+              <option value="'Helvetica',sans-serif">Helvetica</option>
+              <option value="'Verdana',sans-serif">Verdana</option>
+              <option value="'Tahoma',sans-serif">Tahoma</option>
+              <option value="'Trebuchet MS',sans-serif">Trebuchet MS</option>
+              <option value="'Georgia',serif">Georgia</option>
+              <option value="'Times New Roman',serif">Times New Roman</option>
+              <option value="'Palatino Linotype','Book Antiqua',Palatino,serif">Palatino</option>
+              <option value="'Garamond',serif">Garamond</option>
+              <option value="'Courier New',monospace">Courier New</option>
+              <option value="'Lucida Sans Unicode','Lucida Grande',sans-serif">Lucida Sans</option>
+              <option value="'Comic Sans MS','Comic Sans',cursive">Comic</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-group-row" style="margin-top:6px;">
+          <div style="flex:1;min-width:140px;">
+            <div class="small-label">Font style</div>
+            <select id="fontWeightSelect">
+              <option value="400">Regular</option>
+              <option value="500">Medium</option>
+              <option value="700">Bold</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-group-row" style="margin-top:6px;">
+          <div style="flex:1;min-width:140px;">
+            <div class="small-label">Text effect (WordArt)</div>
+            <select id="textStyleSelect">
+              <option value="normal">Normal</option>
+              <option value="bold">Bold</option>
+              <option value="outline">Outline</option>
+              <option value="shadow">Shadow</option>
+              <option value="glow">Glow</option>
+              <option value="emboss">Emboss</option>
+              <option value="engrave">Engrave</option>
+              <option value="gradient">Gradient</option>
+              <option value="rainbow">Rainbow</option>
+              <option value="gold">Gold</option>
+              <option value="silver">Silver</option>
+              <option value="neon">Neon</option>
+              <option value="chrome">Chrome</option>
+              <option value="soft3d">Soft 3D</option>
+              <option value="hard3d">Hard 3D</option>
+              <option value="curveUp">Curve Up</option>
+              <option value="curveDown">Curve Down</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:140px;">
+            <div class="small-label">Shadow (base)</div>
+            <select id="textShadowSelect">
+              <option value="none">None</option>
+              <option value="soft">Soft</option>
+              <option value="strong">Strong</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="range-row" style="margin-top:6px;">
+          <span>Size</span>
+          <input type="range" id="textSizeRange" min="20" max="120" value="72">
+          <span id="textSizeLabel">72 px</span>
+        </div>
+        <div class="two-col" style="margin-top:6px;">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;">
+            <div class="small-label">Text color</div>
+            <input type="color" id="textColorInput" value="#111827">
+          </div>
+        </div>
+        <div style="margin-top:6px;">
+          <div class="small-label">Title text</div>
+          <input type="text" id="titleInput" placeholder="Example: Happy Birthday">
+        </div>
+        <div style="margin-top:6px;">
+          <div class="small-label">Body text</div>
+          <textarea id="bodyInput"
+            placeholder="Example: Join us for cake, music and lots of fun as we celebrate.&#10;Press Enter for a new line."></textarea>
+        </div>
+        <div style="margin-top:6px;">
+          <div class="small-label">Footer text</div>
+          <input type="text" id="footerInput" placeholder="Example: RSVP - Friday · 6 PM · JHST F-123 · Sharma Family">
+        </div>
+        <div class="helper-text">
+          ENTER creates a new line. Text also wraps automatically.  
+          Use “Text effect” for WordArt-like styles and “Font style” for Regular / Medium / Bold.
+        </div>
+      </div>
+
+      <!-- 4. ICONS / STICKERS -->
+      <div class="field-group">
+        <label><span class="icon">🎈</span><span>4. Icons & stickers</span></label>
+        <div class="two-col">
+          <div>
+            <div class="small-label">Add new icon</div>
+            <select id="addStickerSelect">
+              <option value="">Choose icon…</option>
+              <option value="🎈">Balloon 🎈</option>
+              <option value="🎉">Party popper 🎉</option>
+              <option value="🎊">Confetti 🎊</option>
+              <option value="🪅">Piñata 🪅</option>
+              <option value="🪩">Disco ball 🪩</option>
+              <option value="🎆">Fireworks 🎆</option>
+              <option value="🎇">Sparkler 🎇</option>
+              <option value="🎀">Ribbon 🎀</option>
+              <option value="🎗️">Awareness ribbon 🎗️</option>
+              <option value="🎏">Streamers 🎏</option>
+
+              <option value="🎂">Cake 🎂</option>
+              <option value="🧁">Cupcake 🧁</option>
+              <option value="🍰">Slice cake 🍰</option>
+              <option value="🎁">Gift 🎁</option>
+              <option value="🕯️">Candle 🕯️</option>
+              <option value="🍭">Lollipop 🍭</option>
+              <option value="🍬">Candy 🍬</option>
+              <option value="🍫">Chocolate 🍫</option>
+              <option value="🍩">Donut 🍩</option>
+
+              <option value="✨">Sparkles ✨</option>
+              <option value="⭐">Star ⭐</option>
+              <option value="🌟">Glowing star 🌟</option>
+              <option value="💫">Dizzy 💫</option>
+              <option value="🌈">Rainbow 🌈</option>
+              <option value="💥">Boom 💥</option>
+
+              <option value="❤️">Heart ❤️</option>
+              <option value="💖">Sparkling heart 💖</option>
+              <option value="💘">Arrow heart 💘</option>
+              <option value="💕">Two hearts 💕</option>
+              <option value="💝">Gift heart 💝</option>
+
+              <option value="🐻">Bear 🐻</option>
+              <option value="🧸">Teddy 🧸</option>
+              <option value="🦄">Unicorn 🦄</option>
+              <option value="🐱">Cat 🐱</option>
+              <option value="🐶">Dog 🐶</option>
+              <option value="👑">Crown 👑</option>
+
+              <option value="🎵">Note 🎵</option>
+              <option value="🎶">Music 🎶</option>
+              <option value="🎤">Mic 🎤</option>
+              <option value="🎧">Headphones 🎧</option>
+              <option value="🎸">Guitar 🎸</option>
+              <option value="💃">Dancer 💃</option>
+              <option value="🕺">Dancer 🕺</option>
+
+              <option value="⬛">Square ⬛</option>
+              <option value="🟥">Red square 🟥</option>
+              <option value="🟧">Orange square 🟧</option>
+              <option value="🟨">Yellow square 🟨</option>
+              <option value="🟩">Green square 🟩</option>
+              <option value="🟦">Blue square 🟦</option>
+              <option value="🟪">Purple square 🟪</option>
+              <option value="🔶">Diamond 🔶</option>
+              <option value="🔷">Diamond 🔷</option>
+
+              <option value="🍕">Pizza 🍕</option>
+              <option value="🍔">Burger 🍔</option>
+              <option value="🍟">Fries 🍟</option>
+              <option value="🍹">Drink 🍹</option>
+              <option value="☕">Coffee ☕</option>
+            </select>
+          </div>
+          <div>
+            <div class="small-label">Selected icon</div>
+            <select id="activeStickerSelect">
+              <option value="">None</option>
+            </select>
+          </div>
+        </div>
+        <div class="range-row" style="margin-top:6px;">
+          <span>Icon size</span>
+          <input type="range" id="stickerSizeRange" min="24" max="220" value="96">
+          <span id="stickerSizeLabel">96 px</span>
+        </div>
+        <div class="range-row" style="margin-top:6px;">
+          <span>Rotation</span>
+          <input type="range" id="stickerRotateRange" min="-45" max="45" value="0">
+          <span id="stickerRotateLabel">0°</span>
+        </div>
+        <div class="button-row">
+          <button class="btn-ghost" id="deleteStickerBtn">🗑 Remove selected icon</button>
+        </div>
+        <div class="helper-text">
+          Add icons from the dropdown. Drag icons on the poster. Use size & rotation sliders for the selected icon.
+        </div>
+      </div>
+
+      <!-- 5. IMAGES -->
+      <div class="field-group">
+        <label><span class="icon">🖼️</span><span>5. Images & photos</span></label>
+        <div class="two-col">
+          <div>
+            <div class="small-label">Add image</div>
+            <input type="file" id="addImageInput" accept="image/*" multiple>
+          </div>
+          <div>
+            <div class="small-label">Selected image</div>
+            <select id="activeImageSelect">
+              <option value="">None</option>
+            </select>
+          </div>
+        </div>
+        <div class="range-row" style="margin-top:6px;">
+          <span>Image size</span>
+          <input type="range" id="imageScaleRange" min="20" max="200" value="100">
+          <span id="imageScaleLabel">100%</span>
+        </div>
+        <div class="range-row" style="margin-top:6px;">
+          <span>Rotation</span>
+          <input type="range" id="imageRotateRange" min="-180" max="180" value="0">
+          <span id="imageRotateLabel">0°</span>
+        </div>
+        <div class="button-row">
+          <button class="btn-ghost" id="deleteImageBtn">🗑 Remove selected image</button>
+        </div>
+        <div class="helper-text">
+          Each image appears with a box & handles: drag to move, use corner handle to resize, and top handle to rotate.
+        </div>
+      </div>
+
+      <!-- 6. BORDER & FRAME -->
+      <div class="field-group">
+        <label><span class="icon">📐</span><span>6. Border & frame</span></label>
+        <div class="two-col">
+          <div>
+            <div class="small-label">Border style</div>
+            <select id="borderStyleSelect">
+              <option value="none">None</option>
+              <option value="solid">Solid</option>
+              <option value="dashed">Dashed</option>
+              <option value="dotted">Dotted</option>
+              <option value="double">Double line</option>
+              <option value="glow">Glow frame</option>
+              <option value="neon">Neon</option>
+              <option value="gradient">Gradient frame</option>
+              <option value="emoji">Emoji pattern ⭐</option>
+              <option value="shadow">Shadow frame</option>
+              <option value="wave">Wave / Curvy</option>
+              <option value="zigzagSharp">Zigzag (Sharp)</option>
+              <option value="zigzagHand">Zigzag (Hand-drawn)</option>
+              <option value="zigzagDouble">Zigzag (Double)</option>
+              <option value="aura">Soft aura</option>
+              <option value="bevel">3D bevel</option>
+            </select>
+          </div>
+          <div>
+            <div class="small-label">Thickness</div>
+            <select id="borderThicknessSelect">
+              <option value="thin">Thin</option>
+              <option value="normal" selected>Normal</option>
+              <option value="thick">Thick</option>
+              <option value="extra">Extra thick</option>
+              <option value="ultra">Ultra</option>
+            </select>
+          </div>
+        </div>
+        <div class="two-col" style="margin-top:6px;">
+          <div>
+            <div class="small-label">Border color</div>
+            <input type="color" id="borderColorInput" value="#111827">
+          </div>
+          <div>
+            <div class="small-label">Corner radius</div>
+            <input type="range" id="borderRadiusRange" min="0" max="80" value="24">
+          </div>
+        </div>
+        <div class="helper-text">
+          Choose border style (solid, dashed, glow, gradient, emoji, wave, sharp zigzag, hand zigzag, double zigzag, etc.).  
+          Thickness preset controls how bold the border looks.
+        </div>
+      </div>
+
+      <!-- 7. GENERATE & DOWNLOAD -->
+      <div class="field-group">
+        <label><span class="icon">⬇️</span><span>7. Generate & download</span></label>
+        <div class="button-row">
+          <button class="btn-primary" id="generateBtn">⚡ Update preview</button>
+
+          <div class="format-toggle" id="formatToggle">
+            <button type="button" data-format="png" class="active">PNG</button>
+            <button type="button" data-format="jpeg">JPG</button>
+          </div>
+
+          <button class="btn-secondary" id="downloadBtn" disabled>Download poster</button>
+          <button class="btn-ghost" id="clearBtn">Reset all</button>
+        </div>
+        <div class="status-bar">
+          <div class="status-dot" id="statusDot"></div>
+          <span id="statusText">Idle – set background, text, icons, images & border, then click Update preview.</span>
+        </div>
+      </div>
+
+      <div class="tiny">
+        Everything is generated in your browser using Canvas. No hidden footer is added to your design.
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    
+<div class="right-panel">
+
+  <div class="preview-card">
+    <div class="preview-header">
+      <span>Live Poster Preview (drag text, icons & images)</span>
+      <div class="preview-badges">
+        <span class="preview-tag" id="previewSizeTag">1080 × 1350</span>
+        <span class="preview-tag" id="previewBgTag">Background: solid</span>
+        <span class="preview-tag" id="previewBorderTag">Border: none</span>
+      </div>
+    </div>
+
+    <div class="canvas-wrapper">
+      <canvas id="posterCanvas" width="1080" height="1350"></canvas>
+    </div>
+  </div>
+
+</div>
+    
+    </div>
+  </div>
+
+  <script>
+    const posterCanvas=document.getElementById("posterCanvas");
+    const ctx=posterCanvas.getContext("2d");
+
+    // DOM refs
+    const modeRadios=document.querySelectorAll('input[name="mode"]');
+    const editUploadWrapper=document.getElementById("editUploadWrapper");
+    const existingPosterInput=document.getElementById("existingPosterInput");
+
+    const sizeSelect=document.getElementById("sizeSelect");
+    const customSizeRow=document.getElementById("customSizeRow");
+    const customWidthInput=document.getElementById("customWidth");
+    const customHeightInput=document.getElementById("customHeight");
+
+    const backgroundTypeSelect=document.getElementById("backgroundTypeSelect");
+    const bgColor1Input=document.getElementById("bgColor1");
+    const bgColor2Input=document.getElementById("bgColor2");
+
+    const activeTextSelect=document.getElementById("activeTextSelect");
+    const fontFamilySelect=document.getElementById("fontFamilySelect");
+    const fontWeightSelect=document.getElementById("fontWeightSelect");
+    const textStyleSelect=document.getElementById("textStyleSelect");
+    const textSizeRange=document.getElementById("textSizeRange");
+    const textSizeLabel=document.getElementById("textSizeLabel");
+    const textColorInput=document.getElementById("textColorInput");
+    const textShadowSelect=document.getElementById("textShadowSelect");
+
+    const titleInput=document.getElementById("titleInput");
+    const bodyInput=document.getElementById("bodyInput");
+    const footerInput=document.getElementById("footerInput");
+
+    const addStickerSelect=document.getElementById("addStickerSelect");
+    const activeStickerSelect=document.getElementById("activeStickerSelect");
+    const stickerSizeRange=document.getElementById("stickerSizeRange");
+    const stickerSizeLabel=document.getElementById("stickerSizeLabel");
+    const stickerRotateRange=document.getElementById("stickerRotateRange");
+    const stickerRotateLabel=document.getElementById("stickerRotateLabel");
+    const deleteStickerBtn=document.getElementById("deleteStickerBtn");
+
+    const addImageInput=document.getElementById("addImageInput");
+    const activeImageSelect=document.getElementById("activeImageSelect");
+    const imageScaleRange=document.getElementById("imageScaleRange");
+    const imageScaleLabel=document.getElementById("imageScaleLabel");
+    const imageRotateRange=document.getElementById("imageRotateRange");
+    const imageRotateLabel=document.getElementById("imageRotateLabel");
+    const deleteImageBtn=document.getElementById("deleteImageBtn");
+
+    const borderStyleSelect=document.getElementById("borderStyleSelect");
+    const borderThicknessSelect=document.getElementById("borderThicknessSelect");
+    const borderColorInput=document.getElementById("borderColorInput");
+    const borderRadiusRange=document.getElementById("borderRadiusRange");
+
+    const generateBtn=document.getElementById("generateBtn");
+    const downloadBtn=document.getElementById("downloadBtn");
+    const clearBtn=document.getElementById("clearBtn");
+    const formatToggle=document.getElementById("formatToggle");
+
+    const statusDot=document.getElementById("statusDot");
+    const statusText=document.getElementById("statusText");
+    const previewSizeTag=document.getElementById("previewSizeTag");
+    const previewBgTag=document.getElementById("previewBgTag");
+    const previewBorderTag=document.getElementById("previewBorderTag");
+
+    let mode="create";
+    let bgImage=null;
+    let hasGenerated=false;
+    let preferredFormat="png";
+
+    let draggingType=null;
+    let draggingId=null;
+    let dragMode=null;
+    let dragOffsetX=0,dragOffsetY=0;
+    let dragStartAngle=0;
+    let dragStartRotation=0;
+    let dragStartDistance=0;
+    let dragStartScale=1;
+
+    const borderSettings={
+      style:"none",
+      thicknessPreset:"normal",
+      thicknessPx:8,
+      color:"#111827",
+      radius:24
+    };
+    const borderThicknessMap={thin:4,normal:8,thick:14,extra:22,ultra:30};
+
+    const textItems=[
+      {
+        id:"title",
+        label:"Title",
+        inputEl:titleInput,
+        xRatio:.5,
+        yRatio:.22,
+        fontSize:72,
+        fontFamily:"system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",
+        color:"#111827",
+        shadow:"soft",
+        stylePreset:"normal",
+        weight:"700",
+        bounds:null
+      },
+      {
+        id:"body",
+        label:"Body",
+        inputEl:bodyInput,
+        xRatio:.5,
+        yRatio:.53,
+        fontSize:48,
+        fontFamily:"system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",
+        color:"#374151",
+        shadow:"none",
+        stylePreset:"normal",
+        weight:"400",
+        bounds:null
+      },
+      {
+        id:"footer",
+        label:"Footer",
+        inputEl:footerInput,
+        xRatio:.5,
+        yRatio:.86,
+        fontSize:32,
+        fontFamily:"system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",
+        color:"#6b7280",
+        shadow:"none",
+        stylePreset:"normal",
+        weight:"400",
+        bounds:null
+      }
+    ];
+
+    let stickers=[];
+    let images=[];
+
+    function setStatus(msg,active){
+      statusText.textContent=msg;
+      statusDot.classList.toggle("active",!!active);
+    }
+
+    function resizeCanvasToPreset(){
+      const choice=sizeSelect.value;
+      let w=1080,h=1350;
+      if(choice==="square"){w=1080;h=1080;}
+      else if(choice==="landscape"){w=1920;h=1080;}
+      else if(choice==="custom"){
+        const cw=parseInt(customWidthInput.value,10)||1080;
+        const ch=parseInt(customHeightInput.value,10)||1350;
+        w=Math.min(Math.max(cw,400),2500);
+        h=Math.min(Math.max(ch,400),2500);
+      }
+      posterCanvas.width=w;
+      posterCanvas.height=h;
+      previewSizeTag.textContent=`${w} × ${h}`;
+      updateTextPositionsFromRatios();
+    }
+
+    function updateTextPositionsFromRatios(){
+      const w=posterCanvas.width,h=posterCanvas.height;
+      textItems.forEach(item=>{
+        item.x=item.xRatio*w;
+        item.y=item.yRatio*h;
+      });
+    }
+
+    function getActiveTextItem(){
+      const id=activeTextSelect.value;
+      return textItems.find(t=>t.id===id);
+    }
+
+    function applyControlsToActiveText(){
+      const item=getActiveTextItem();
+      if(!item)return;
+      item.fontFamily=fontFamilySelect.value;
+      item.fontSize=parseInt(textSizeRange.value,10)||item.fontSize;
+      item.color=textColorInput.value;
+      item.shadow=textShadowSelect.value;
+      item.stylePreset=textStyleSelect.value;
+      item.weight=fontWeightSelect.value||"400";
+      drawPoster();
+    }
+
+    function syncControlsFromActiveText(){
+      const item=getActiveTextItem();
+      if(!item)return;
+      fontFamilySelect.value=item.fontFamily;
+      textSizeRange.value=item.fontSize;
+      textSizeLabel.textContent=`${item.fontSize} px`;
+      textColorInput.value=item.color;
+      textShadowSelect.value=item.shadow;
+      textStyleSelect.value=item.stylePreset||"normal";
+      fontWeightSelect.value=item.weight||"400";
+    }
+
+    function refreshStickerDropdown(){
+      activeStickerSelect.innerHTML="";
+      const optNone=document.createElement("option");
+      optNone.value="";
+      optNone.textContent="None";
+      activeStickerSelect.appendChild(optNone);
+      stickers.forEach((s,index)=>{
+        const opt=document.createElement("option");
+        opt.value=s.id;
+        opt.textContent=`Icon ${index+1} ${s.emoji}`;
+        activeStickerSelect.appendChild(opt);
+      });
+    }
+
+    function updateStickerControls(){
+      const id=activeStickerSelect.value;
+      const sticker=stickers.find(s=>s.id===id);
+      const disabled=!sticker;
+      stickerSizeRange.disabled=disabled;
+      stickerRotateRange.disabled=disabled;
+      deleteStickerBtn.disabled=disabled;
+      if(sticker){
+        stickerSizeRange.value=sticker.fontSize;
+        stickerSizeLabel.textContent=`${sticker.fontSize} px`;
+        stickerRotateRange.value=sticker.rotation;
+        stickerRotateLabel.textContent=`${sticker.rotation}°`;
+      }else{
+        stickerSizeLabel.textContent="–";
+        stickerRotateLabel.textContent="–";
+      }
+    }
+
+    function addSticker(emoji){
+      if(!emoji)return;
+      const id=`sticker_${Date.now()}_${Math.floor(Math.random()*9999)}`;
+      const w=posterCanvas.width,h=posterCanvas.height;
+      const sticker={
+        id,
+        emoji,
+        x:w*0.5,
+        y:h*0.3,
+        fontSize:96,
+        rotation:0,
+        bounds:null
+      };
+      stickers.push(sticker);
+      refreshStickerDropdown();
+      activeStickerSelect.value=id;
+      updateStickerControls();
+      drawPoster();
+    }
+
+    function removeActiveSticker(){
+      const id=activeStickerSelect.value;
+      if(!id)return;
+      stickers=stickers.filter(s=>s.id!==id);
+      refreshStickerDropdown();
+      activeStickerSelect.value="";
+      updateStickerControls();
+      drawPoster();
+    }
+
+    function refreshImageDropdown(){
+      activeImageSelect.innerHTML="";
+      const optNone=document.createElement("option");
+      optNone.value="";
+      optNone.textContent="None";
+      activeImageSelect.appendChild(optNone);
+      images.forEach((imgObj,index)=>{
+        const opt=document.createElement("option");
+        opt.value=imgObj.id;
+        opt.textContent=`Image ${index+1}`;
+        activeImageSelect.appendChild(opt);
+      });
+    }
+
+    function updateImageControls(){
+      const id=activeImageSelect.value;
+      const imgObj=images.find(im=>im.id===id);
+      const disabled=!imgObj;
+      imageScaleRange.disabled=disabled;
+      imageRotateRange.disabled=disabled;
+      deleteImageBtn.disabled=disabled;
+      if(imgObj){
+        imageScaleRange.value=Math.round(imgObj.scale*100);
+        imageScaleLabel.textContent=`${Math.round(imgObj.scale*100)}%`;
+        imageRotateRange.value=Math.round(imgObj.rotation);
+        imageRotateLabel.textContent=`${Math.round(imgObj.rotation)}°`;
+      }else{
+        imageScaleLabel.textContent="–";
+        imageRotateLabel.textContent="–";
+      }
+    }
+
+    function applyBackgroundTag(){
+      const type=backgroundTypeSelect.value;
+      previewBgTag.textContent=`Background: ${type}`;
+    }
+    function applyBorderTag(){
+      previewBorderTag.textContent=`Border: ${borderSettings.style}`;
+    }
+    function updateBorderThickness(){
+      const preset=borderThicknessSelect.value;
+      borderSettings.thicknessPreset=preset;
+      borderSettings.thicknessPx=borderThicknessMap[preset]||8;
+    }
+
+    // BACKGROUND
+    function drawBackground(){
+      const w=posterCanvas.width,h=posterCanvas.height;
+      ctx.clearRect(0,0,w,h);
+
+      if(bgImage && mode==="edit"){
+        const ratioCanvas=w/h;
+        const ratioImg=bgImage.width/bgImage.height;
+        let drawW,drawH,offX,offY;
+        if(ratioImg>ratioCanvas){
+          drawH=h;
+          drawW=ratioImg*drawH;
+          offX=(w-drawW)/2;
+          offY=0;
+        }else{
+          drawW=w;
+          drawH=drawW/ratioImg;
+          offX=0;
+          offY=(h-drawH)/2;
+        }
+        ctx.drawImage(bgImage,offX,offY,drawW,drawH);
+        ctx.fillStyle="rgba(255,255,255,0.1)";
+        ctx.fillRect(0,0,w,h);
+        return;
+      }
+
+      const type=backgroundTypeSelect.value;
+      const c1=bgColor1Input.value;
+      const c2=bgColor2Input.value;
+
+      if(type==="solid"){
+        ctx.fillStyle=c1;
+        ctx.fillRect(0,0,w,h);
+      }else if(type==="linear"){
+        const grad=ctx.createLinearGradient(0,0,w,h);
+        grad.addColorStop(0,c1);
+        grad.addColorStop(1,c2);
+        ctx.fillStyle=grad;
+        ctx.fillRect(0,0,w,h);
+      }else{
+        const grad=ctx.createRadialGradient(w/2,h/3,10,w/2,h/2,w);
+        grad.addColorStop(0,c2);
+        grad.addColorStop(1,c1);
+        ctx.fillStyle=grad;
+        ctx.fillRect(0,0,w,h);
+      }
+
+      const vignette=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w/1.2);
+      vignette.addColorStop(0,"rgba(255,255,255,0)");
+      vignette.addColorStop(1,"rgba(148,163,184,0.25)");
+      ctx.fillStyle=vignette;
+      ctx.fillRect(0,0,w,h);
+    }
+
+    // BORDER
+    function drawBorder(){
+      const style=borderSettings.style;
+      if(style==="none")return;
+      const w=posterCanvas.width,h=posterCanvas.height;
+      const margin=Math.max(w,h)*0.04;
+      const x=margin,y=margin,bw=w-margin*2,bh=h-margin*2;
+      const r=Math.min(borderSettings.radius,bw/2,bh/2);
+      const color=borderSettings.color;
+      const baseLineWidth=borderSettings.thicknessPx;
+
+      function roundedRectPath(x,y,w,h,r){
+        ctx.beginPath();
+        ctx.moveTo(x+r,y);
+        ctx.lineTo(x+w-r,y);
+        ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+        ctx.lineTo(x+w,y+h-r);
+        ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+        ctx.lineTo(x+r,y+h);
+        ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+        ctx.lineTo(x,y+r);
+        ctx.quadraticCurveTo(x,y,x+r,y);
+        ctx.closePath();
+      }
+
+      ctx.save();
+      ctx.lineJoin="round";
+
+      if(style==="solid"||style==="dashed"||style==="dotted"){
+        ctx.setLineDash(style==="solid"?[]:(style==="dashed"?[18,10]:[4,8]));
+        ctx.lineWidth=baseLineWidth;
+        ctx.strokeStyle=color;
+        roundedRectPath(x,y,bw,bh,r);
+        ctx.stroke();
+      }
+      else if(style==="double"){
+        const innerGap=baseLineWidth*1.8;
+        ctx.setLineDash([]);
+        ctx.lineWidth=baseLineWidth;
+        ctx.strokeStyle=color;
+        roundedRectPath(x,y,bw,bh,r);
+        ctx.stroke();
+        ctx.lineWidth=baseLineWidth*0.6;
+        roundedRectPath(x+innerGap,y+innerGap,bw-innerGap*2,bh-innerGap*2,Math.max(r-innerGap,0));
+        ctx.stroke();
+      }
+      else if(style==="glow"){
+        ctx.setLineDash([]);
+        ctx.lineWidth=baseLineWidth*1.3;
+        ctx.strokeStyle=color;
+        ctx.shadowColor=color;
+        ctx.shadowBlur=baseLineWidth*2.5;
+        ctx.shadowOffsetX=0;
+        ctx.shadowOffsetY=0;
+        roundedRectPath(x,y,bw,bh,r);
+        ctx.stroke();
+      }
+      else if(style==="neon"){
+        const neonOuter=color;
+        const neonInner="#ffffff";
+        ctx.setLineDash([]);
+        ctx.lineWidth=baseLineWidth*1.1;
+        ctx.strokeStyle=neonOuter;
+        ctx.shadowColor=neonOuter;
+        ctx.shadowBlur=baseLineWidth*3;
+        ctx.shadowOffsetX=0;
+        ctx.shadowOffsetY=0;
+        roundedRectPath(x,y,bw,bh,r);
+        ctx.stroke();
+        ctx.shadowBlur=0;
+        ctx.lineWidth=baseLineWidth*0.6;
+        ctx.strokeStyle=neonInner;
+        roundedRectPath(x+baseLineWidth*0.4,y+baseLineWidth*0.4,bw-baseLineWidth*0.8,bh-baseLineWidth*0.8,Math.max(r-baseLineWidth*0.4,0));
+        ctx.stroke();
+      }
+      else if(style==="gradient"){
+        const grad=ctx.createLinearGradient(x,y,x+bw,y+bh);
+        grad.addColorStop(0,color);
+        grad.addColorStop(0.5,"#ffffff");
+        grad.addColorStop(1,color);
+        ctx.setLineDash([]);
+        ctx.lineWidth=baseLineWidth;
+        ctx.strokeStyle=grad;
+        roundedRectPath(x,y,bw,bh,r);
+        ctx.stroke();
+      }
+      else if(style==="emoji"){
+        const emoji="⭐";
+        ctx.setLineDash([]);
+        ctx.lineWidth=1;
+        ctx.strokeStyle="transparent";
+        const fontSize=baseLineWidth*2.2;
+        ctx.font=`${fontSize}px system-ui,emoji`;
+        ctx.textAlign="center";
+        ctx.textBaseline="middle";
+        const stepX=fontSize*1.2;
+        const stepY=fontSize*1.2;
+        for(let cx=x+r;cx<=x+bw-r;cx+=stepX){
+          ctx.fillText(emoji,cx,y);
+          ctx.fillText(emoji,cx,y+bh);
+        }
+        for(let cy=y+r;cy<=y+bh-r;cy+=stepY){
+          ctx.fillText(emoji,x,cy);
+          ctx.fillText(emoji,x+bw,cy);
+        }
+      }
+      else if(style==="shadow"){
+        ctx.setLineDash([]);
+        ctx.lineWidth=baseLineWidth;
+        ctx.strokeStyle=color;
+        ctx.shadowColor="rgba(15,23,42,0.9)";
+        ctx.shadowBlur=baseLineWidth*2;
+        ctx.shadowOffsetX=baseLineWidth*0.7;
+        ctx.shadowOffsetY=baseLineWidth*0.7;
+        roundedRectPath(x,y,bw,bh,r);
+        ctx.stroke();
+      }
+      else if(style==="wave"){
+        ctx.setLineDash([]);
+        ctx.lineWidth=baseLineWidth;
+        ctx.strokeStyle=color;
+        const amplitude=baseLineWidth*0.8;
+        const freq=baseLineWidth*0.9;
+        ctx.beginPath();
+        for(let px=x;px<=x+bw;px+=4){
+          const py=y+Math.sin((px-x)/freq)*amplitude;
+          if(px===x)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+        }
+        for(let py=y;py<=y+bh;py+=4){
+          const px=x+bw+Math.sin((py-y)/freq)*amplitude;
+          ctx.lineTo(px,py);
+        }
+        for(let px=x+bw;px>=x;px-=4){
+          const py=y+bh+Math.sin((px-x)/freq)*amplitude;
+          ctx.lineTo(px,py);
+        }
+        for(let py=y+bh;py>=y;py-=4){
+          const px=x+Math.sin((py-y)/freq)*amplitude;
+          ctx.lineTo(px,py);
+        }
+        ctx.closePath();
+        ctx.stroke();
+      }
+      else if(style==="zigzagSharp"||style==="zigzagHand"||style==="zigzagDouble"){
+        const step=baseLineWidth*3;
+        const amp=baseLineWidth*1.2;
+        ctx.setLineDash([]);
+        ctx.lineWidth=baseLineWidth;
+        ctx.strokeStyle=color;
+
+        function drawZigSegment(x1,y1,x2,y2,horiz,randomize){
+          ctx.beginPath();
+          if(horiz){
+            let dir=1;
+            for(let px=x1;px<=x2;px+=step){
+              const mid=px+step/2;
+              const baseY=y1;
+              const peakY=baseY+(dir*amp*(randomize?(0.7+Math.random()*0.6):1));
+              if(px===x1)ctx.moveTo(px,baseY);else ctx.lineTo(px,baseY);
+              ctx.lineTo(mid,peakY);
+              ctx.lineTo(px+step,baseY);
+              dir*=-1;
+            }
+          }else{
+            let dir=1;
+            for(let py=y1;py<=y2;py+=step){
+              const mid=py+step/2;
+              const baseX=x1;
+              const peakX=baseX+(dir*amp*(randomize?(0.7+Math.random()*0.6):1));
+              if(py===y1)ctx.moveTo(baseX,py);else ctx.lineTo(baseX,py);
+              ctx.lineTo(peakX,mid);
+              ctx.lineTo(baseX,py+step);
+              dir*=-1;
+            }
+          }
+          ctx.stroke();
+        }
+
+        const randomize=(style==="zigzagHand");
+        drawZigSegment(x,y,x+bw,y,true,randomize);
+        drawZigSegment(x,y+bh,x+bw,y+bh,true,randomize);
+        drawZigSegment(x,y,x,y+bh,false,randomize);
+        drawZigSegment(x+bw,y,x+bw,y+bh,false,randomize);
+
+        if(style==="zigzagDouble"){
+          const inset=baseLineWidth*1.5;
+          drawZigSegment(x+inset,y+inset,x+bw-inset,y+inset,true,randomize);
+          drawZigSegment(x+inset,y+bh-inset,x+bw-inset,y+bh-inset,true,randomize);
+          drawZigSegment(x+inset,y+inset,x+inset,y+bh-inset,false,randomize);
+          drawZigSegment(x+bw-inset,y+inset,x+bw-inset,y+bh-inset,false,randomize);
+        }
+      }
+      else if(style==="aura"){
+        ctx.setLineDash([]);
+        const layers=3;
+        for(let i=0;i<layers;i++){
+          const alpha=0.35/(i+1);
+          ctx.strokeStyle=color;
+          ctx.globalAlpha=alpha;
+          ctx.lineWidth=baseLineWidth+(i*baseLineWidth*0.8);
+          roundedRectPath(x-i*baseLineWidth*0.4,y-i*baseLineWidth*0.4,bw+i*baseLineWidth*0.8,bh+i*baseLineWidth*0.8,r+baseLineWidth*0.3);
+          ctx.stroke();
+        }
+        ctx.globalAlpha=1;
+      }
+      else if(style==="bevel"){
+        ctx.setLineDash([]);
+        const light="#ffffff";
+        const dark="rgba(15,23,42,0.95)";
+        const lw=baseLineWidth*0.7;
+        ctx.lineWidth=lw;
+        ctx.strokeStyle=light;
+        ctx.beginPath();
+        ctx.moveTo(x+r,y);
+        ctx.lineTo(x+bw-r,y);
+        ctx.moveTo(x,y+r);
+        ctx.lineTo(x,y+bh-r);
+        ctx.stroke();
+        ctx.strokeStyle=dark;
+        ctx.beginPath();
+        ctx.moveTo(x+r,y+bh);
+        ctx.lineTo(x+bw-r,y+bh);
+        ctx.moveTo(x+bw,y+r);
+        ctx.lineTo(x+bw,y+bh-r);
+        ctx.stroke();
+        ctx.strokeStyle=color;
+        ctx.lineWidth=lw*0.7;
+        roundedRectPath(x+lw,y+lw,bw-lw*2,bh-lw*2,r);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function buildLinesWithWrap(text,fontSize,maxWidth){
+      const paragraphs=text.split(/\n/);
+      const lineHeight=fontSize*1.25;
+      const lines=[];
+      ctx.textAlign="center";
+      ctx.textBaseline="middle";
+      paragraphs.forEach(para=>{
+        const trimmed=para.trim();
+        if(trimmed.length===0){
+          lines.push("");
+          return;
+        }
+        const words=trimmed.split(/\s+/);
+        let line="";
+        for(let i=0;i<words.length;i++){
+          const testLine=line+words[i]+" ";
+          const testWidth=ctx.measureText(testLine).width;
+          if(testWidth>maxWidth && i>0){
+            lines.push(line.trim());
+            line=words[i]+" ";
+          }else{
+            line=testLine;
+          }
+        }
+        if(line.trim())lines.push(line.trim());
+      });
+      return{lines,lineHeight};
+    }
+
+    function drawCurvedText(item,isUp){
+      const rawText=(item.inputEl.value||"").replace(/\s+/g," ").trim();
+      if(!rawText){item.bounds=null;return;}
+      const radius=Math.min(posterCanvas.width,posterCanvas.height)*0.28;
+      const chars=rawText.split("");
+      const angleSpread=Math.PI*0.9;
+      const angleStep=angleSpread/Math.max(chars.length-1,1);
+      const direction=isUp?-1:1;
+      const centerX=item.x;
+      const centerY=item.y+(isUp?radius*0.1:-radius*0.1);
+      ctx.save();
+      ctx.textAlign="center";
+      ctx.textBaseline="middle";
+      ctx.font=`${item.weight} ${item.fontSize}px ${item.fontFamily}`;
+      let gradient=null;
+      const style=item.stylePreset;
+      if(["rainbow","gradient","gold","silver","neon","chrome"].includes(style)){
+        gradient=ctx.createLinearGradient(centerX-radius,centerY,centerX+radius,centerY);
+        if(style==="rainbow"){
+          gradient.addColorStop(0,"#ef4444");
+          gradient.addColorStop(0.2,"#f97316");
+          gradient.addColorStop(0.4,"#eab308");
+          gradient.addColorStop(0.6,"#22c55e");
+          gradient.addColorStop(0.8,"#3b82f6");
+          gradient.addColorStop(1,"#a855f7");
+        }else if(style==="gradient"){
+          gradient.addColorStop(0,item.color);
+          gradient.addColorStop(1,"#ffffff");
+        }else if(style==="gold"){
+          gradient.addColorStop(0,"#facc15");
+          gradient.addColorStop(0.4,"#fde68a");
+          gradient.addColorStop(1,"#b45309");
+        }else if(style==="silver"){
+          gradient.addColorStop(0,"#e5e7eb");
+          gradient.addColorStop(0.5,"#9ca3af");
+          gradient.addColorStop(1,"#f9fafb");
+        }else if(style==="neon"){
+          gradient.addColorStop(0,"#22d3ee");
+          gradient.addColorStop(1,"#a855f7");
+        }else if(style==="chrome"){
+          gradient.addColorStop(0,"#f3f4f6");
+          gradient.addColorStop(0.5,"#4b5563");
+          gradient.addColorStop(1,"#e5e7eb");
+        }
+      }
+      if(item.shadow==="soft"){
+        ctx.shadowColor="rgba(0,0,0,0.3)";
+        ctx.shadowBlur=8;
+        ctx.shadowOffsetX=1;
+        ctx.shadowOffsetY=2;
+      }else if(item.shadow==="strong"){
+        ctx.shadowColor="rgba(0,0,0,0.6)";
+        ctx.shadowBlur=14;
+        ctx.shadowOffsetX=2;
+        ctx.shadowOffsetY=4;
+      }else{
+        ctx.shadowColor="transparent";
+        ctx.shadowBlur=0;
+        ctx.shadowOffsetX=0;
+        ctx.shadowOffsetY=0;
+      }
+      const startAngle=-angleSpread/2;
+      let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+      chars.forEach((ch,i)=>{
+        const angle=startAngle+i*angleStep;
+        const angleAdjusted=isUp?angle:-angle;
+        const x=centerX+radius*Math.sin(angleAdjusted);
+        const y=centerY+radius*direction*Math.cos(angleAdjusted);
+        ctx.save();
+        ctx.translate(x,y);
+        ctx.rotate(-angleAdjusted*direction);
+        let fillStyle=item.color;
+        if(gradient)fillStyle=gradient;
+        const style=item.stylePreset;
+        if(style==="outline"){
+          ctx.lineWidth=item.fontSize*0.12;
+          ctx.strokeStyle="#000000";
+          ctx.strokeText(ch,0,0);
+          ctx.fillStyle=fillStyle;
+          ctx.fillText(ch,0,0);
+        }else if(style==="glow"||style==="neon"){
+          ctx.shadowColor=gradient||item.color;
+          ctx.shadowBlur=item.fontSize*0.6;
+          ctx.fillStyle=fillStyle;
+          ctx.fillText(ch,0,0);
+        }else if(style==="soft3d"||style==="hard3d"){
+          const depth=style==="hard3d"?4:2;
+          ctx.fillStyle="rgba(15,23,42,0.65)";
+          for(let d=depth;d>0;d--){
+            ctx.fillText(ch,d,d);
+          }
+          ctx.shadowBlur=0;
+          ctx.fillStyle=fillStyle;
+          ctx.fillText(ch,0,0);
+        }else if(style==="emboss"||style==="engrave"){
+          const off=1.5;
+          ctx.fillStyle="rgba(255,255,255,0.7)";
+          ctx.fillText(ch,-off,-off);
+          ctx.fillStyle="rgba(0,0,0,0.6)";
+          ctx.fillText(ch,off,off);
+          ctx.fillStyle=fillStyle;
+          ctx.fillText(ch,0,0);
+        }else{
+          ctx.fillStyle=fillStyle;
+          ctx.fillText(ch,0,0);
+        }
+        ctx.restore();
+        minX=Math.min(minX,x);
+        maxX=Math.max(maxX,x);
+        minY=Math.min(minY,y);
+        maxY=Math.max(maxY,y);
+      });
+      ctx.restore();
+      item.bounds={
+        x:minX-item.fontSize,
+        y:minY-item.fontSize,
+        width:(maxX-minX)+item.fontSize*2,
+        height:(maxY-minY)+item.fontSize*2
+      };
+    }
+
+    function drawTextItem(item){
+      const text=item.inputEl.value||"";
+      if(!text.trim()){item.bounds=null;return;}
+      const style=item.stylePreset||"normal";
+      const maxWidth=posterCanvas.width*0.8;
+      ctx.font=`${item.weight} ${item.fontSize}px ${item.fontFamily}`;
+      ctx.textAlign="center";
+      ctx.textBaseline="middle";
+      if(style==="curveUp"||style==="curveDown"){
+        drawCurvedText(item,style==="curveUp");
+        return;
+      }
+      const {lines,lineHeight}=buildLinesWithWrap(text,item.fontSize,maxWidth);
+      const totalHeight=lines.length*lineHeight;
+      const startY=item.y-totalHeight/2+lineHeight/2;
+      if(item.shadow==="soft"){
+        ctx.shadowColor="rgba(0,0,0,0.2)";
+        ctx.shadowBlur=8;
+        ctx.shadowOffsetX=1;
+        ctx.shadowOffsetY=2;
+      }else if(item.shadow==="strong"){
+        ctx.shadowColor="rgba(0,0,0,0.5)";
+        ctx.shadowBlur=14;
+        ctx.shadowOffsetX=2;
+        ctx.shadowOffsetY=4;
+      }else{
+        ctx.shadowColor="transparent";
+        ctx.shadowBlur=0;
+        ctx.shadowOffsetX=0;
+        ctx.shadowOffsetY=0;
+      }
+      let gradient=null;
+      if(["rainbow","gradient","gold","silver","neon","chrome"].includes(style)){
+        gradient=ctx.createLinearGradient(item.x-maxWidth/2,0,item.x+maxWidth/2,0);
+        if(style==="rainbow"){
+          gradient.addColorStop(0,"#ef4444");
+          gradient.addColorStop(0.2,"#f97316");
+          gradient.addColorStop(0.4,"#eab308");
+          gradient.addColorStop(0.6,"#22c55e");
+          gradient.addColorStop(0.8,"#3b82f6");
+          gradient.addColorStop(1,"#a855f7");
+        }else if(style==="gradient"){
+          gradient.addColorStop(0,item.color);
+          gradient.addColorStop(1,"#000000");
+        }else if(style==="gold"){
+          gradient.addColorStop(0,"#facc15");
+          gradient.addColorStop(0.4,"#fde68a");
+          gradient.addColorStop(1,"#b45309");
+        }else if(style==="silver"){
+          gradient.addColorStop(0,"#e5e7eb");
+          gradient.addColorStop(0.5,"#9ca3af");
+          gradient.addColorStop(1,"#f9fafb");
+        }else if(style==="neon"){
+          gradient.addColorStop(0,"#22d3ee");
+          gradient.addColorStop(1,"#a855f7");
+        }else if(style==="chrome"){
+          gradient.addColorStop(0,"#f3f4f6");
+          gradient.addColorStop(0.5,"#4b5563");
+          gradient.addColorStop(1,"#e5e7eb");
+        }
+      }
+
+      let minX=item.x-maxWidth/2;
+      let maxX=item.x+maxWidth/2;
+      let minY=startY-lineHeight/2;
+      let maxY=startY+(lines.length-1)*lineHeight+lineHeight/2;
+
+      lines.forEach((ln,idx)=>{
+        const y=startY+idx*lineHeight;
+        let fillStyle=item.color;
+        if(gradient)fillStyle=gradient;
+        if(style==="bold"){
+          ctx.font=`700 ${item.fontSize}px ${item.fontFamily}`;
+          ctx.fillStyle=fillStyle;
+          ctx.fillText(ln,item.x,y);
+        }else if(style==="outline"){
+          ctx.lineWidth=item.fontSize*0.07;
+          ctx.strokeStyle="#000000";
+          ctx.strokeText(ln,item.x,y);
+          ctx.fillStyle=fillStyle;
+          ctx.fillText(ln,item.x,y);
+        }else if(style==="shadow"){
+          ctx.shadowColor="rgba(0,0,0,0.5)";
+          ctx.shadowBlur=item.fontSize*0.4;
+          ctx.fillStyle=fillStyle;
+          ctx.fillText(ln,item.x,y);
+        }else if(style==="glow"||style==="neon"){
+          ctx.shadowColor=gradient||item.color;
+          ctx.shadowBlur=item.fontSize*0.7;
+          ctx.fillStyle=fillStyle;
+          ctx.fillText(ln,item.x,y);
+        }else if(style==="soft3d"||style==="hard3d"){
+          const depth=style==="hard3d"?4:2;
+          ctx.fillStyle="rgba(15,23,42,0.6)";
+          for(let d=depth;d>0;d--){
+            ctx.fillText(ln,item.x+d,item.y+d);
+          }
+          ctx.shadowBlur=0;
+          ctx.fillStyle=fillStyle;
+          ctx.fillText(ln,item.x,y);
+        }else if(style==="emboss"||style==="engrave"){
+          const off=2;
+          ctx.fillStyle="rgba(255,255,255,0.7)";
+          ctx.fillText(ln,item.x-off,y-off);
+          ctx.fillStyle="rgba(0,0,0,0.6)";
+          ctx.fillText(ln,item.x+off,y+off);
+          ctx.fillStyle=fillStyle;
+          ctx.fillText(ln,item.x,y);
+        }else{
+          ctx.fillStyle=fillStyle;
+          ctx.fillText(ln,item.x,y);
+        }
+      });
+
+      item.bounds={x:minX,y:minY,width:maxX-minX,height:maxY-minY};
+
+      ctx.shadowColor="transparent";
+      ctx.shadowBlur=0;
+      ctx.shadowOffsetX=0;
+      ctx.shadowOffsetY=0;
+    }
+
+    function drawSticker(sticker){
+      const text=sticker.emoji;
+      ctx.save();
+      ctx.translate(sticker.x,sticker.y);
+      ctx.rotate(sticker.rotation*Math.PI/180);
+      ctx.font=`${sticker.fontSize}px system-ui,emoji`;
+      ctx.textAlign="center";
+      ctx.textBaseline="middle";
+      ctx.shadowColor="rgba(0,0,0,0.3)";
+      ctx.shadowBlur=8;
+      ctx.shadowOffsetX=1;
+      ctx.shadowOffsetY=2;
+      ctx.fillText(text,0,0);
+      ctx.restore();
+      const metrics=ctx.measureText(text);
+      const w=Math.max(metrics.width,sticker.fontSize);
+      const h=sticker.fontSize*1.1;
+      sticker.bounds={x:sticker.x-w/2,y:sticker.y-h/2,width:w,height:h};
+    }
+
+    function drawImageItem(imgObj,isSelected){
+      const img=imgObj.img;
+      if(!img)return;
+      const w=imgObj.baseW*imgObj.scale;
+      const h=imgObj.baseH*imgObj.scale;
+      ctx.save();
+      ctx.translate(imgObj.x,imgObj.y);
+      ctx.rotate(imgObj.rotation*Math.PI/180);
+      ctx.shadowColor="rgba(0,0,0,0.4)";
+      ctx.shadowBlur=10;
+      ctx.shadowOffsetX=2;
+      ctx.shadowOffsetY=4;
+      ctx.drawImage(img,-w/2,-h/2,w,h);
+      ctx.restore();
+      ctx.shadowColor="transparent";
+      ctx.shadowBlur=0;
+      ctx.shadowOffsetX=0;
+      ctx.shadowOffsetY=0;
+
+      const angleRad=imgObj.rotation*Math.PI/180;
+      const cos=Math.cos(angleRad),sin=Math.sin(angleRad);
+      const halfW=w/2,halfH=h/2;
+      const corners=[
+        {x:-halfW,y:-halfH},
+        {x: halfW,y:-halfH},
+        {x: halfW,y: halfH},
+        {x:-halfW,y: halfH}
+      ].map(p=>({x:imgObj.x+p.x*cos-p.y*sin,y:imgObj.y+p.x*sin+p.y*cos}));
+      let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+      corners.forEach(c=>{minX=Math.min(minX,c.x);maxX=Math.max(maxX,c.x);minY=Math.min(minY,c.y);maxY=Math.max(maxY,c.y);});
+      imgObj.bounds={x:minX,y:minY,width:maxX-minX,height:maxY-minY};
+      const topCenter={x:(corners[0].x+corners[1].x)/2,y:(corners[0].y+corners[1].y)/2};
+      const bottomRight=corners[2];
+      const rotateHandleDist=20;
+      const normLen=Math.hypot(topCenter.x-imgObj.x,topCenter.y-imgObj.y)||1;
+      const rotateHandle={
+        x:topCenter.x+(topCenter.x-imgObj.x)/normLen*rotateHandleDist,
+        y:topCenter.y+(topCenter.y-imgObj.y)/normLen*rotateHandleDist
+      };
+      const handleSize=10;
+      imgObj.handles={resize:{x:bottomRight.x,y:bottomRight.y,size:handleSize},rotate:{x:rotateHandle.x,y:rotateHandle.y,size:handleSize+2}};
+
+      if(isSelected){
+        ctx.save();
+        ctx.strokeStyle="rgba(59,130,246,0.9)";
+        ctx.lineWidth=2;
+        ctx.beginPath();
+        ctx.moveTo(corners[0].x,corners[0].y);
+        corners.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
+        ctx.closePath();
+        ctx.stroke();
+        ctx.fillStyle="rgba(59,130,246,1)";
+        ctx.fillRect(bottomRight.x-handleSize/2,bottomRight.y-handleSize/2,handleSize,handleSize);
+        ctx.beginPath();
+        ctx.arc(rotateHandle.x,rotateHandle.y,handleSize/2+1,0,Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function drawPoster(){
+      drawBackground();
+      drawBorder();
+      images.forEach(imgObj=>drawImageItem(imgObj,imgObj.id===activeImageSelect.value));
+      stickers.forEach(s=>drawSticker(s));
+      textItems.forEach(item=>drawTextItem(item));
+    }
+
+    function downloadPoster(){
+      if(!hasGenerated)return;
+      const mime=preferredFormat==="jpeg"?"image/jpeg":"image/png";
+      const ext=preferredFormat==="jpeg"?"jpg":"png";
+      const dataURL=posterCanvas.toDataURL(mime,0.95);
+      const link=document.createElement("a");
+      link.download=`myaitoolbox_poster.${ext}`;
+      link.href=dataURL;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function getPointerPos(evt){
+      const rect=posterCanvas.getBoundingClientRect();
+      const scaleX=posterCanvas.width/rect.width;
+      const scaleY=posterCanvas.height/rect.height;
+      const clientX=evt.clientX||(evt.touches&&evt.touches[0].clientX);
+      const clientY=evt.clientY||(evt.touches&&evt.touches[0].clientY);
+      return{
+        x:(clientX-rect.left)*scaleX,
+        y:(clientY-rect.top)*scaleY
+      };
+    }
+
+    function hitTestImageHandles(pos){
+      for(let i=images.length-1;i>=0;i--){
+        const imgObj=images[i];
+        const h=imgObj.handles;
+        if(!h)continue;
+        const r=h.resize,ro=h.rotate;
+        if(r && pos.x>=r.x-r.size && pos.x<=r.x+r.size && pos.y>=r.y-r.size && pos.y<=r.y+r.size){
+          return{type:"image",id:imgObj.id,mode:"resize"};
+        }
+        if(ro){
+          const dist=Math.hypot(pos.x-ro.x,pos.y-ro.y);
+          if(dist<=ro.size){return{type:"image",id:imgObj.id,mode:"rotate"};}
+        }
+      }
+      return null;
+    }
+
+    function hitTest(pos){
+      const handleHit=hitTestImageHandles(pos);
+      if(handleHit)return handleHit;
+      for(let i=images.length-1;i>=0;i--){
+        const imgObj=images[i];
+        const b=imgObj.bounds;
+        if(!b)continue;
+        if(pos.x>=b.x && pos.x<=b.x+b.width && pos.y>=b.y && pos.y<=b.y+b.height){
+          return{type:"image",id:imgObj.id,mode:"move"};
+        }
+      }
+      for(let i=textItems.length-1;i>=0;i--){
+        const item=textItems[i];
+        const b=item.bounds;
+        if(!b)continue;
+        if(pos.x>=b.x && pos.x<=b.x+b.width && pos.y>=b.y && pos.y<=b.y+b.height){
+          return{type:"text",id:item.id,mode:"move"};
+        }
+      }
+      for(let i=stickers.length-1;i>=0;i--){
+        const st=stickers[i];
+        const b=st.bounds;
+        if(!b)continue;
+        if(pos.x>=b.x && pos.x<=b.x+b.width && pos.y>=b.y && pos.y<=b.y+b.height){
+          return{type:"sticker",id:st.id,mode:"move"};
+        }
+      }
+      return null;
+    }
+
+    function startDrag(evt){
+      const pos=getPointerPos(evt);
+      const hit=hitTest(pos);
+      if(!hit)return;
+      draggingType=hit.type;
+      draggingId=hit.id;
+      dragMode=hit.mode;
+      if(draggingType==="text"){
+        const item=textItems.find(t=>t.id===draggingId);
+        if(!item)return;
+        dragOffsetX=pos.x-item.x;
+        dragOffsetY=pos.y-item.y;
+        activeTextSelect.value=item.id;
+        syncControlsFromActiveText();
+      }else if(draggingType==="sticker"){
+        const st=stickers.find(s=>s.id===draggingId);
+        if(!st)return;
+        dragOffsetX=pos.x-st.x;
+        dragOffsetY=pos.y-st.y;
+        activeStickerSelect.value=st.id;
+        updateStickerControls();
+      }else if(draggingType==="image"){
+        const imgObj=images.find(im=>im.id===draggingId);
+        if(!imgObj)return;
+        activeImageSelect.value=imgObj.id;
+        updateImageControls();
+        if(dragMode==="move"){
+          dragOffsetX=pos.x-imgObj.x;
+          dragOffsetY=pos.y-imgObj.y;
+        }else if(dragMode==="rotate"){
+          const dx=pos.x-imgObj.x,dy=pos.y-imgObj.y;
+          dragStartAngle=Math.atan2(dy,dx);
+          dragStartRotation=imgObj.rotation;
+        }else if(dragMode==="resize"){
+          const dx=pos.x-imgObj.x,dy=pos.y-imgObj.y;
+          dragStartDistance=Math.hypot(dx,dy);
+          dragStartScale=imgObj.scale;
+        }
+      }
+    }
+
+    function moveDrag(evt){
+      if(!draggingType)return;
+      const pos=getPointerPos(evt);
+      if(draggingType==="text"){
+        const item=textItems.find(t=>t.id===draggingId);
+        if(!item)return;
+        item.x=pos.x-dragOffsetX;
+        item.y=pos.y-dragOffsetY;
+        item.xRatio=item.x/posterCanvas.width;
+        item.yRatio=item.y/posterCanvas.height;
+      }else if(draggingType==="sticker"){
+        const st=stickers.find(s=>s.id===draggingId);
+        if(!st)return;
+        st.x=pos.x-dragOffsetX;
+        st.y=pos.y-dragOffsetY;
+      }else if(draggingType==="image"){
+        const imgObj=images.find(im=>im.id===draggingId);
+        if(!imgObj)return;
+        if(dragMode==="move"){
+          imgObj.x=pos.x-dragOffsetX;
+          imgObj.y=pos.y-dragOffsetY;
+        }else if(dragMode==="rotate"){
+          const dx=pos.x-imgObj.x,dy=pos.y-imgObj.y;
+          const angle=Math.atan2(dy,dx);
+          const delta=(angle-dragStartAngle)*180/Math.PI;
+          imgObj.rotation=dragStartRotation+delta;
+          imageRotateRange.value=Math.round(imgObj.rotation);
+          imageRotateLabel.textContent=`${Math.round(imgObj.rotation)}°`;
+        }else if(dragMode==="resize"){
+          const dx=pos.x-imgObj.x,dy=pos.y-imgObj.y;
+          const dist=Math.hypot(dx,dy);
+          const scale=dragStartScale*dist/dragStartDistance;
+          imgObj.scale=Math.min(Math.max(scale,0.2),2.0);
+          imageScaleRange.value=Math.round(imgObj.scale*100);
+          imageScaleLabel.textContent=`${Math.round(imgObj.scale*100)}%`;
+        }
+      }
+      drawPoster();
+    }
+
+    function endDrag(){
+      draggingType=null;
+      draggingId=null;
+      dragMode=null;
+    }
+
+    // Events wiring
+    modeRadios.forEach(r=>{
+      r.addEventListener("change",()=>{
+        mode=document.querySelector('input[name="mode"]:checked').value;
+        editUploadWrapper.style.display=mode==="edit"?"block":"none";
+        if(mode==="create"){
+          bgImage=null;
+          setStatus("Blank mode – design everything here.",false);
+        }else{
+          setStatus("Edit mode – upload an existing poster.",false);
+        }
+        drawPoster();
+      });
+    });
+
+    existingPosterInput.addEventListener("change",e=>{
+      const file=e.target.files[0];
+      if(!file)return;
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        const img=new Image();
+        img.onload=()=>{
+          bgImage=img;
+          hasGenerated=true;
+          downloadBtn.disabled=false;
+          setStatus("Existing poster loaded. Add text, icons, images & border, then download.",true);
+          drawPoster();
+        };
+        img.src=ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    sizeSelect.addEventListener("change",()=>{
+      customSizeRow.style.display=sizeSelect.value==="custom"?"flex":"none";
+      resizeCanvasToPreset();
+      hasGenerated=true;
+      downloadBtn.disabled=false;
+      drawPoster();
+    });
+    customWidthInput.addEventListener("input",()=>{if(sizeSelect.value==="custom"){resizeCanvasToPreset();drawPoster();}});
+    customHeightInput.addEventListener("input",()=>{if(sizeSelect.value==="custom"){resizeCanvasToPreset();drawPoster();}});
+
+    [backgroundTypeSelect,bgColor1Input,bgColor2Input].forEach(el=>{
+      el.addEventListener("change",()=>{
+        applyBackgroundTag();
+        drawPoster();
+      });
+    });
+
+    activeTextSelect.addEventListener("change",()=>{syncControlsFromActiveText();});
+    fontFamilySelect.addEventListener("change",applyControlsToActiveText);
+    fontWeightSelect.addEventListener("change",applyControlsToActiveText);
+    textStyleSelect.addEventListener("change",applyControlsToActiveText);
+    textSizeRange.addEventListener("input",()=>{
+      textSizeLabel.textContent=`${textSizeRange.value} px`;
+      applyControlsToActiveText();
+    });
+    textColorInput.addEventListener("input",applyControlsToActiveText);
+    textShadowSelect.addEventListener("change",applyControlsToActiveText);
+
+    [titleInput,bodyInput,footerInput].forEach(el=>{
+      el.addEventListener("input",()=>{
+        hasGenerated=true;
+        downloadBtn.disabled=false;
+        drawPoster();
+      });
+    });
+
+    addStickerSelect.addEventListener("change",()=>{
+      const emoji=addStickerSelect.value;
+      if(emoji){
+        addSticker(emoji);
+        addStickerSelect.value="";
+      }
+    });
+    activeStickerSelect.addEventListener("change",updateStickerControls);
+    stickerSizeRange.addEventListener("input",()=>{
+      stickerSizeLabel.textContent=`${stickerSizeRange.value} px`;
+      const id=activeStickerSelect.value;
+      const st=stickers.find(s=>s.id===id);
+      if(!st)return;
+      st.fontSize=parseInt(stickerSizeRange.value,10)||st.fontSize;
+      drawPoster();
+    });
+    stickerRotateRange.addEventListener("input",()=>{
+      stickerRotateLabel.textContent=`${stickerRotateRange.value}°`;
+      const id=activeStickerSelect.value;
+      const st=stickers.find(s=>s.id===id);
+      if(!st)return;
+      st.rotation=parseInt(stickerRotateRange.value,10)||0;
+      drawPoster();
+    });
+    deleteStickerBtn.addEventListener("click",removeActiveSticker);
+
+    addImageInput.addEventListener("change",e=>{
+      const files=Array.from(e.target.files||[]);
+      if(!files.length)return;
+      files.forEach(file=>{
+        const reader=new FileReader();
+        reader.onload=ev=>{
+          const img=new Image();
+          img.onload=()=>{
+            const id=`img_${Date.now()}_${Math.floor(Math.random()*9999)}`;
+            const wCanvas=posterCanvas.width,hCanvas=posterCanvas.height;
+            const maxDim=Math.min(wCanvas,hCanvas)*0.5;
+            const maxSide=Math.max(img.width,img.height);
+            const scale=Math.min(maxDim/maxSide,1);
+            const imgObj={
+              id,
+              img,
+              src:ev.target.result,
+              x:wCanvas*0.5,
+              y:hCanvas*0.5,
+              baseW:img.width,
+              baseH:img.height,
+              scale:scale,
+              rotation:0,
+              bounds:null,
+              handles:null
+            };
+            images.push(imgObj);
+            refreshImageDropdown();
+            activeImageSelect.value=id;
+            updateImageControls();
+            hasGenerated=true;
+            downloadBtn.disabled=false;
+            drawPoster();
+          };
+          img.src=ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+      e.target.value="";
+    });
+
+    activeImageSelect.addEventListener("change",()=>{
+      updateImageControls();
+      drawPoster();
+    });
+
+    imageScaleRange.addEventListener("input",()=>{
+      const id=activeImageSelect.value;
+      const imgObj=images.find(im=>im.id===id);
+      if(!imgObj)return;
+      const val=parseInt(imageScaleRange.value,10)||100;
+      imgObj.scale=Math.min(Math.max(val/100,0.2),2.0);
+      imageScaleLabel.textContent=`${val}%`;
+      drawPoster();
+    });
+    imageRotateRange.addEventListener("input",()=>{
+      const id=activeImageSelect.value;
+      const imgObj=images.find(im=>im.id===id);
+      if(!imgObj)return;
+      const val=parseInt(imageRotateRange.value,10)||0;
+      imgObj.rotation=val;
+      imageRotateLabel.textContent=`${val}°`;
+      drawPoster();
+    });
+    deleteImageBtn.addEventListener("click",()=>{
+      const id=activeImageSelect.value;
+      if(!id)return;
+      images=images.filter(im=>im.id!==id);
+      refreshImageDropdown();
+      activeImageSelect.value="";
+      updateImageControls();
+      drawPoster();
+    });
+
+    borderStyleSelect.addEventListener("change",()=>{
+      borderSettings.style=borderStyleSelect.value;
+      applyBorderTag();
+      drawPoster();
+    });
+    borderThicknessSelect.addEventListener("change",()=>{
+      updateBorderThickness();
+      drawPoster();
+    });
+    borderColorInput.addEventListener("input",()=>{
+      borderSettings.color=borderColorInput.value;
+      drawPoster();
+    });
+    borderRadiusRange.addEventListener("input",()=>{
+      borderSettings.radius=parseInt(borderRadiusRange.value,10)||24;
+      drawPoster();
+    });
+
+    formatToggle.addEventListener("click",e=>{
+      const btn=e.target.closest("button[data-format]");
+      if(!btn)return;
+      preferredFormat=btn.getAttribute("data-format");
+      formatToggle.querySelectorAll("button[data-format]").forEach(b=>{
+        b.classList.toggle("active",b===btn);
+      });
+      setStatus(`Download format set to ${preferredFormat.toUpperCase()}.`,false);
+    });
+
+    generateBtn.addEventListener("click",()=>{
+      hasGenerated=true;
+      downloadBtn.disabled=false;
+      setStatus("Preview updated. Drag text, icons & images, then download.",true);
+      drawPoster();
+    });
+
+    downloadBtn.addEventListener("click",()=>{
+      if(!hasGenerated)return;
+      setStatus(`Preparing ${preferredFormat.toUpperCase()} download…`,true);
+      setTimeout(()=>{
+        downloadPoster();
+        setStatus(`${preferredFormat.toUpperCase()} downloaded. You can still edit & download again.`,true);
+      },30);
+    });
+
+    clearBtn.addEventListener("click",()=>{
+      bgImage=null;
+      sizeSelect.value="portrait";
+      backgroundTypeSelect.value="solid";
+      bgColor1Input.value="#ffffff";
+      bgColor2Input.value="#e5e7eb";
+      applyBackgroundTag();
+      titleInput.value="";
+      bodyInput.value="";
+      footerInput.value="";
+      stickers=[];
+      images=[];
+      refreshStickerDropdown();
+      refreshImageDropdown();
+      activeStickerSelect.value="";
+      activeImageSelect.value="";
+      updateStickerControls();
+      updateImageControls();
+      textItems.forEach(item=>{
+        item.color=item.id==="title"?"#111827":item.id==="body"?"#374151":"#6b7280";
+        item.fontFamily="system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+        item.shadow=item.id==="title"?"soft":"none";
+        item.stylePreset="normal";
+        item.weight=item.id==="title"?"700":"400";
+      });
+      borderSettings.style="none";
+      borderSettings.thicknessPreset="normal";
+      borderSettings.thicknessPx=borderThicknessMap["normal"];
+      borderSettings.color="#111827";
+      borderSettings.radius=24;
+      borderStyleSelect.value="none";
+      borderThicknessSelect.value="normal";
+      borderColorInput.value="#111827";
+      borderRadiusRange.value=24;
+      applyBorderTag();
+      resizeCanvasToPreset();
+      updateTextPositionsFromRatios();
+      syncControlsFromActiveText();
+      hasGenerated=false;
+      downloadBtn.disabled=true;
+      setStatus("All cleared. Start designing again.",false);
+      drawPoster();
+    });
+
+    posterCanvas.addEventListener("mousedown",e=>startDrag(e));
+    posterCanvas.addEventListener("mousemove",e=>moveDrag(e));
+    posterCanvas.addEventListener("mouseup",endDrag);
+    posterCanvas.addEventListener("mouseleave",endDrag);
+    posterCanvas.addEventListener("touchstart",e=>{e.preventDefault();startDrag(e);},{passive:false});
+    posterCanvas.addEventListener("touchmove",e=>{e.preventDefault();moveDrag(e);},{passive:false});
+    posterCanvas.addEventListener("touchend",endDrag);
+
+    (function init(){
+      resizeCanvasToPreset();
+      updateTextPositionsFromRatios();
+      syncControlsFromActiveText();
+      updateStickerControls();
+      updateImageControls();
+      applyBackgroundTag();
+      applyBorderTag();
+      updateBorderThickness();
+      setStatus("Idle – set background, text, icons, images & border, then click Update preview.",false);
+      drawPoster();
+    })();
+  </script>
+</body>
+</html>
