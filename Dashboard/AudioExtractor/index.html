@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MyAIToolBox – AAC/MP3 Audio Extractor with Timeline Trim</title>
+  <!--
+    IMPORTANT:
+    This file expects these FOUR files in the SAME folder:
+      - index.html  (this file)
+      - ffmpeg-core.js
+      - ffmpeg-core.wasm
+      - ffmpeg-core.worker.js
+    And a Netlify (or similar) _headers file enabling SharedArrayBuffer:
+      /*
+        Cross-Origin-Embedder-Policy: require-corp
+        Cross-Origin-Opener-Policy: same-origin
+        Cross-Origin-Resource-Policy: cross-origin
+  -->
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      min-height:100vh;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:linear-gradient(135deg,#020617,#111827,#1e293b);
+      display:flex;align-items:center;justify-content:center;
+      padding:20px;color:#e5e7eb;
+    }
+    .app{
+      width:100%;max-width:960px;
+      background:radial-gradient(circle at top left,rgba(56,189,248,.15),rgba(15,23,42,.96));
+      border-radius:24px;
+      padding:22px 24px 24px;
+      box-shadow:0 20px 45px rgba(0,0,0,.7);
+      border:1px solid rgba(148,163,253,.3);
+    }
+    .header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+    .title-row{display:flex;align-items:center;gap:8px}
+    .title{font-size:1.4rem;font-weight:700;letter-spacing:.03em}
+    .badge{font-size:.75rem;padding:2px 10px;border-radius:999px;background:linear-gradient(120deg,#22c55e,#4ade80);color:#052e16;font-weight:600}
+    .subtitle{font-size:.84rem;color:#cbd5f5;opacity:.9;max-width:440px}
+    .layout{display:grid;grid-template-columns:3fr 2fr;gap:18px}
+    @media(max-width:840px){.layout{grid-template-columns:1fr}}
+    .card{
+      background:rgba(15,23,42,.92);
+      border-radius:18px;
+      padding:14px 14px 16px;
+      border:1px solid rgba(148,163,253,.25);
+    }
+    .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}
+    .card-title{font-size:.95rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#e5e7ff}
+    .pill{font-size:.7rem;padding:2px 9px;border-radius:999px;border:1px solid rgba(148,163,253,.5);color:#a5b4fc;text-transform:uppercase;letter-spacing:.05em}
+    .field{margin-bottom:10px}
+    .label{
+      font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;
+      color:#9ca3ff;margin-bottom:5px;
+    }
+    input[type=file]{
+      width:100%;border-radius:12px;border:1px solid rgba(148,163,253,.55);
+      padding:8px 10px;background:rgba(15,23,42,.98);
+      color:#e5e7ff;font-size:.83rem;outline:none;
+    }
+    input::placeholder{color:#6b7280}
+    .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .btn{
+      border-radius:999px;border:none;padding:8px 16px;
+      font-size:.8rem;font-weight:600;
+      cursor:pointer;display:inline-flex;align-items:center;gap:6px;
+      text-transform:uppercase;letter-spacing:.05em;
+      transition:transform .12s ease,box-shadow .12s ease,background .15s ease;
+      white-space:nowrap;
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,#4f46e5,#22c55e);
+      color:#ecfeff;
+      box-shadow:0 10px 25px rgba(59,130,246,.5);
+    }
+    .btn-primary:hover:not(:disabled){
+      transform:translateY(-1px);
+      box-shadow:0 14px 32px rgba(37,99,235,.7);
+    }
+    .btn-secondary{
+      background:rgba(15,23,42,.95);color:#cbd5f5;
+      border:1px solid rgba(148,163,253,.6);
+    }
+    .btn-secondary:hover:not(:disabled){
+      background:rgba(30,64,175,.9);
+      transform:translateY(-1px);
+    }
+    .btn-ghost{
+      background:rgba(15,23,42,.9);
+      color:#e5e7eb;
+      border:1px dashed rgba(148,163,253,.7);
+    }
+    .btn-ghost:hover:not(:disabled){
+      background:rgba(30,64,175,.9);
+      transform:translateY(-1px);
+    }
+    .btn:disabled{opacity:.5;cursor:default;transform:none;box-shadow:none}
+    .status{margin-top:8px;font-size:.8rem;min-height:18px}
+    .status span{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:3px 10px;border-radius:999px;border:1px solid transparent;
+    }
+    .status.info span{color:#c4b5fd;border-color:rgba(129,140,248,.7);background:rgba(15,23,42,.95)}
+    .status.ok span{color:#bbf7d0;border-color:rgba(34,197,94,.75);background:rgba(5,46,22,.95)}
+    .status.err span{color:#fecaca;border-color:rgba(248,113,113,.85);background:rgba(69,10,10,.95)}
+    .dot{width:8px;height:8px;border-radius:999px;background:currentColor}
+    .meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:6px;font-size:.78rem}
+    .meta{padding:7px 9px;border-radius:10px;border:1px dashed rgba(148,163,253,.4);background:rgba(15,23,42,.98)}
+    .meta-label{color:#9ca3af;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+    .meta-val{font-weight:600;color:#e5e7ff}
+    .helper{margin-top:6px;font-size:.76rem;color:#9ca3ff}
+    .preview{
+      margin-top:10px;padding:8px 10px;border-radius:12px;
+      border:1px solid rgba(148,163,253,.35);
+      background:radial-gradient(circle at top right,rgba(56,189,248,.16),rgba(15,23,42,.98));
+    }
+    .preview-title{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:#a5b4fc;margin-bottom:6px}
+    audio{width:100%}
+    .loader{
+      position:fixed;inset:0;display:none;
+      align-items:center;justify-content:center;
+      background:rgba(15,23,42,.65);backdrop-filter:blur(6px);
+      z-index:9999;
+    }
+    .loader-box{
+      background:rgba(15,23,42,.98);
+      border-radius:20px;border:1px solid rgba(148,163,253,.6);
+      padding:18px 24px;display:flex;flex-direction:column;align-items:center;gap:10px;
+      box-shadow:0 18px 40px rgba(15,23,42,.9);
+    }
+    .loader-ring{
+      width:52px;height:52px;border-radius:50%;
+      background:conic-gradient(#4f46e5,#22c55e,#0ea5e9,#f97316,#4f46e5);
+      -webkit-mask:radial-gradient(farthest-side,transparent 55%,#000 56%);
+      animation:ringSpin .9s linear infinite;
+    }
+    .loader-text{font-size:.82rem;text-transform:uppercase;letter-spacing:.12em;color:#e5e7ff}
+    .loader-sub{font-size:.75rem;color:#9ca3af}
+    @keyframes ringSpin{to{transform:rotate(360deg)}}
+
+    /* Timeline styles */
+    .timeline-wrapper{margin-top:10px}
+    .timeline-label{font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;color:#9ca3ff;margin-bottom:4px}
+    .timeline{
+      position:relative;
+      width:100%;
+      height:32px;
+      border-radius:999px;
+      background:rgba(15,23,42,.98);
+      border:1px solid rgba(148,163,253,.5);
+      padding:6px 10px;
+      display:flex;
+      align-items:center;
+    }
+    .timeline-track{
+      position:relative;
+      flex:1;
+      height:6px;
+      border-radius:999px;
+      background:rgba(30,64,175,.7);
+      overflow:visible;
+    }
+    .timeline-range{
+      position:absolute;
+      top:0;bottom:0;
+      border-radius:999px;
+      background:linear-gradient(90deg,#22c55e,#a855f7);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      min-width:10px;
+    }
+    .timeline-handle{
+      width:12px;height:18px;
+      border-radius:8px;
+      background:#0f172a;
+      border:1px solid rgba(248,250,252,.85);
+      box-shadow:0 0 0 1px rgba(15,23,42,.7);
+      cursor:ew-resize;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:.55rem;
+      color:#e5e7eb;
+      user-select:none;
+    }
+    .timeline-times{
+      margin-top:4px;
+      display:flex;
+      justify-content:space-between;
+      font-size:.76rem;
+      color:#cbd5f5;
+    }
+    .timeline-times span{opacity:.9}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div>
+        <div class="title-row">
+          <div class="title">MyAIToolBox</div>
+          <span class="badge">FFmpeg · AAC · MP3 · Timeline Trim</span>
+        </div>
+        <p class="subtitle">
+          Upload a video, extract audio as AAC (.m4a), drag the timeline to choose any start & end, and download your trimmed clip as M4A or MP3 – all in your browser.
+        </p>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- LEFT: Load & Extract -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">1. Load Video & Extract</div>
+          <div class="pill">Local file only</div>
+        </div>
+
+        <div class="field">
+          <div class="label">Video file</div>
+          <input type="file" id="videoFileInput" accept="video/*" />
+          <div class="helper">Use small MP4 / MOV / WEBM for fastest processing. Your video never leaves this device.</div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btnExtract">Extract AAC Audio</button>
+          <button class="btn btn-secondary" id="btnReset">Reset</button>
+        </div>
+
+        <div class="status info" id="statusExtract">
+          <span><span class="dot"></span><span>Waiting for video file…</span></span>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta">
+            <div class="meta-label">Video status</div>
+            <div class="meta-val" id="metaVideoStatus">No file</div>
+          </div>
+          <div class="meta">
+            <div class="meta-label">Video duration</div>
+            <div class="meta-val" id="metaVideoDuration">–</div>
+          </div>
+        </div>
+
+        <div class="preview" id="audioPreviewBlock" style="display:none;">
+          <div class="preview-title">Extracted AAC Audio</div>
+          <audio id="audioPreview" controls></audio>
+        </div>
+      </div>
+
+      <!-- RIGHT: Timeline Trim & Download -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">2. Timeline Trim & Download</div>
+          <div class="pill">Drag to select</div>
+        </div>
+
+        <div class="helper">
+          Drag the handles on the timeline to choose the trim region. Then export as M4A (fast copy) or MP3 (re-encode).
+        </div>
+
+        <!-- Timeline UI -->
+        <div class="timeline-wrapper">
+          <div class="timeline-label">Trim region</div>
+          <div class="timeline" id="timeline">
+            <div class="timeline-track" id="timelineTrack">
+              <div class="timeline-range" id="timelineRange">
+                <div class="timeline-handle" id="handleStart">L</div>
+                <div class="timeline-handle" id="handleEnd">R</div>
+              </div>
+            </div>
+          </div>
+          <div class="timeline-times">
+            <span>Start: <span id="labelStart">0.0 s</span></span>
+            <span>End: <span id="labelEnd">0.0 s</span></span>
+          </div>
+        </div>
+
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn btn-primary" id="btnTrimM4A" disabled>Trim & Download M4A</button>
+          <button class="btn btn-ghost" id="btnTrimMP3" disabled>Trim & Download MP3</button>
+        </div>
+
+        <div class="status info" id="statusTrim">
+          <span><span class="dot"></span><span>Waiting for extracted audio…</span></span>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta">
+            <div class="meta-label">Full audio duration</div>
+            <div class="meta-val" id="metaAudioDuration">–</div>
+          </div>
+          <div class="meta">
+            <div class="meta-label">Last export range</div>
+            <div class="meta-val" id="metaLastExport">–</div>
+          </div>
+        </div>
+
+        <div class="preview" id="trimPreviewBlock" style="display:none;">
+          <div class="preview-title">Trimmed clip preview</div>
+          <audio id="trimAudioPreview" controls></audio>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loader overlay -->
+  <div class="loader" id="loaderOverlay">
+    <div class="loader-box">
+      <div class="loader-ring"></div>
+      <div class="loader-text" id="loaderText">Processing…</div>
+      <div class="loader-sub" id="loaderSubText"></div>
+    </div>
+  </div>
+
+  <!-- FFmpeg main script from jsDelivr -->
+  <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.10.1/dist/ffmpeg.min.js"></script>
+  <script>
+    (function () {
+      const { createFFmpeg, fetchFile } = FFmpeg;
+
+      const ffmpeg = createFFmpeg({
+        log: false,
+        corePath: "./ffmpeg-core.js"
+      });
+
+      let ffmpegReady = false;
+
+      const videoInput = document.getElementById("videoFileInput");
+      const btnExtract = document.getElementById("btnExtract");
+      const btnReset   = document.getElementById("btnReset");
+      const btnTrimM4A = document.getElementById("btnTrimM4A");
+      const btnTrimMP3 = document.getElementById("btnTrimMP3");
+
+      const statusExtract = document.getElementById("statusExtract");
+      const statusTrim    = document.getElementById("statusTrim");
+
+      const metaVideoStatus   = document.getElementById("metaVideoStatus");
+      const metaVideoDuration = document.getElementById("metaVideoDuration");
+      const metaAudioDuration = document.getElementById("metaAudioDuration");
+      const metaLastExport    = document.getElementById("metaLastExport");
+
+      const audioPreviewBlock = document.getElementById("audioPreviewBlock");
+      const audioPreview      = document.getElementById("audioPreview");
+      const trimPreviewBlock  = document.getElementById("trimPreviewBlock");
+      const trimAudioPreview  = document.getElementById("trimAudioPreview");
+
+      const loaderOverlay = document.getElementById("loaderOverlay");
+      const loaderText    = document.getElementById("loaderText");
+      const loaderSubText = document.getElementById("loaderSubText");
+
+      // Timeline elements
+      const timelineTrack = document.getElementById("timelineTrack");
+      const timelineRange = document.getElementById("timelineRange");
+      const handleStart   = document.getElementById("handleStart");
+      const handleEnd     = document.getElementById("handleEnd");
+      const labelStart    = document.getElementById("labelStart");
+      const labelEnd      = document.getElementById("labelEnd");
+
+      let loadedVideoFile = null;
+      let extractedAudioBlob = null;
+      let extractedAudioDuration = 0;
+      let lastFullAudioUrl = null;
+      let lastTrimmedUrl   = null;
+
+      // Timeline state
+      let trimStartSec = 0;
+      let trimEndSec   = 0;
+      let isDragging   = false;
+      let dragTarget   = null;
+
+      function showLoader(main, sub) {
+        loaderText.textContent = main || "Processing…";
+        loaderSubText.textContent = sub || "";
+        loaderOverlay.style.display = "flex";
+      }
+
+      function hideLoader() {
+        loaderOverlay.style.display = "none";
+      }
+
+      function setStatus(el, type, text) {
+        el.className = "status " + (type === "ok" ? "ok" : type === "err" ? "err" : "info");
+        el.innerHTML =
+          '<span><span class="dot"></span><span>' + text + "</span></span>";
+      }
+
+      function fmtSec(sec) {
+        if (!sec || !isFinite(sec)) return "–";
+        const s = Math.round(sec * 10) / 10;
+        return s + " s";
+      }
+
+      async function ensureFFmpeg() {
+        if (ffmpegReady) return;
+        showLoader("Loading FFmpeg…", "First run can take a few seconds.");
+        try {
+          await ffmpeg.load();
+          ffmpegReady = true;
+          setStatus(statusExtract, "info", "FFmpeg loaded. Ready to extract.");
+        } catch (e) {
+          console.error(e);
+          setStatus(statusExtract, "err", "Failed to load FFmpeg.");
+        } finally {
+          hideLoader();
+        }
+      }
+
+      function resetAll() {
+        loadedVideoFile = null;
+        extractedAudioBlob = null;
+        extractedAudioDuration = 0;
+        trimStartSec = 0;
+        trimEndSec   = 0;
+        if (lastFullAudioUrl)  { URL.revokeObjectURL(lastFullAudioUrl);  lastFullAudioUrl = null; }
+        if (lastTrimmedUrl)    { URL.revokeObjectURL(lastTrimmedUrl);    lastTrimmedUrl = null; }
+
+        videoInput.value = "";
+
+        metaVideoStatus.textContent = "No file";
+        metaVideoDuration.textContent = "–";
+        metaAudioDuration.textContent = "–";
+        metaLastExport.textContent = "–";
+
+        audioPreviewBlock.style.display = "none";
+        audioPreview.removeAttribute("src");
+        trimPreviewBlock.style.display = "none";
+        trimAudioPreview.removeAttribute("src");
+
+        btnTrimM4A.disabled = true;
+        btnTrimMP3.disabled = true;
+
+        setStatus(statusExtract, "info", "Waiting for video file…");
+        setStatus(statusTrim, "info", "Waiting for extracted audio…");
+
+        // Reset timeline visuals
+        requestAnimationFrame(() => {
+          const trackWidth = timelineTrack.clientWidth || 1;
+          timelineRange.style.left = "0px";
+          timelineRange.style.width = trackWidth + "px";
+          labelStart.textContent = "0.0 s";
+          labelEnd.textContent = "0.0 s";
+        });
+
+        hideLoader();
+      }
+
+      // Timeline helpers
+      function updateTimelineFromValues() {
+        const total = extractedAudioDuration || 0;
+        const trackWidth = timelineTrack.clientWidth || 1;
+        if (!total || total <= 0) {
+          timelineRange.style.left = "0px";
+          timelineRange.style.width = trackWidth + "px";
+          labelStart.textContent = "0.0 s";
+          labelEnd.textContent   = "0.0 s";
+          return;
+        }
+
+        const startFraction = Math.max(0, Math.min(1, trimStartSec / total));
+        const endFraction   = Math.max(0, Math.min(1, trimEndSec   / total));
+        const leftPx        = startFraction * trackWidth;
+        const rightPx       = endFraction   * trackWidth;
+        const widthPx       = Math.max(6, rightPx - leftPx);
+
+        timelineRange.style.left  = leftPx + "px";
+        timelineRange.style.width = widthPx + "px";
+
+        labelStart.textContent = fmtSec(trimStartSec);
+        labelEnd.textContent   = fmtSec(trimEndSec);
+      }
+
+      function secFromPosition(clientX) {
+        const rect = timelineTrack.getBoundingClientRect();
+        const total = extractedAudioDuration || 0;
+        if (total <= 0) return 0;
+        const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
+        const fraction = x / rect.width;
+        return fraction * total;
+      }
+
+      function attachTimelineDrag() {
+        function onDown(e, target) {
+          if (!extractedAudioDuration || extractedAudioDuration <= 0) return;
+          isDragging = true;
+          dragTarget = target;
+          e.preventDefault();
+          e.stopPropagation();
+        }
+
+        function onMove(e) {
+          if (!isDragging || !dragTarget) return;
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          const posSec = secFromPosition(clientX);
+          if (dragTarget === handleStart) {
+            trimStartSec = Math.max(0, Math.min(posSec, trimEndSec - 0.05));
+          } else if (dragTarget === handleEnd) {
+            trimEndSec = Math.min(extractedAudioDuration, Math.max(posSec, trimStartSec + 0.05));
+          }
+          // Optional snap to 0.1s
+          trimStartSec = Math.round(trimStartSec * 10) / 10;
+          trimEndSec   = Math.round(trimEndSec   * 10) / 10;
+          updateTimelineFromValues();
+        }
+
+        function onUp() {
+          if (!isDragging) return;
+          isDragging = false;
+          dragTarget = null;
+        }
+
+        handleStart.addEventListener("mousedown", e => onDown(e, handleStart));
+        handleEnd.addEventListener("mousedown",   e => onDown(e, handleEnd));
+        handleStart.addEventListener("touchstart", e => onDown(e, handleStart), { passive:false });
+        handleEnd.addEventListener("touchstart",   e => onDown(e, handleEnd),   { passive:false });
+
+        window.addEventListener("mousemove", onMove);
+        window.addEventListener("touchmove", onMove, { passive:false });
+        window.addEventListener("mouseup", onUp);
+        window.addEventListener("touchend", onUp);
+      }
+
+      // Handle file input
+      videoInput.addEventListener("change", () => {
+        if (!videoInput.files || !videoInput.files.length) {
+          resetAll();
+          return;
+        }
+        loadedVideoFile = videoInput.files[0];
+        metaVideoStatus.textContent = loadedVideoFile.name;
+
+        const url = URL.createObjectURL(loadedVideoFile);
+        const tempVideo = document.createElement("video");
+        tempVideo.preload = "metadata";
+        tempVideo.onloadedmetadata = function () {
+          metaVideoDuration.textContent = fmtSec(tempVideo.duration);
+          URL.revokeObjectURL(url);
+        };
+        tempVideo.onerror = function () {
+          metaVideoDuration.textContent = "–";
+          URL.revokeObjectURL(url);
+        };
+        tempVideo.src = url;
+
+        setStatus(statusExtract, "info", "Video loaded. Click Extract AAC Audio.");
+      });
+
+      btnReset.addEventListener("click", () => {
+        resetAll();
+      });
+
+      // Extract full AAC audio
+      btnExtract.addEventListener("click", async () => {
+        if (!loadedVideoFile) {
+          setStatus(statusExtract, "err", "Please choose a video file first.");
+          return;
+        }
+
+        await ensureFFmpeg();
+        if (!ffmpegReady) return;
+
+        showLoader("Extracting AAC audio…", "Decoding video and encoding .m4a");
+        setStatus(statusExtract, "info", "Running FFmpeg to extract AAC audio…");
+        setStatus(statusTrim, "info", "Waiting for extracted audio…");
+        btnTrimM4A.disabled = true;
+        btnTrimMP3.disabled = true;
+
+        try {
+          ["input.mp4", "audio_full.m4a"].forEach(name => {
+            try { ffmpeg.FS("unlink", name); } catch (e) {}
+          });
+
+          ffmpeg.FS("writeFile", "input.mp4", await fetchFile(loadedVideoFile));
+
+          await ffmpeg.run(
+            "-i", "input.mp4",
+            "-vn",
+            "-c:a", "aac",
+            "-b:a", "128k",
+            "audio_full.m4a"
+          );
+
+          const data = ffmpeg.FS("readFile", "audio_full.m4a");
+          extractedAudioBlob = new Blob([data.buffer], { type: "audio/mp4" });
+
+          if (lastFullAudioUrl) URL.revokeObjectURL(lastFullAudioUrl);
+          lastFullAudioUrl = URL.createObjectURL(extractedAudioBlob);
+          audioPreview.src = lastFullAudioUrl;
+          audioPreviewBlock.style.display = "block";
+
+          // Detect duration via AudioContext
+          try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            const ctx = new AudioCtx();
+            const buf = await extractedAudioBlob.arrayBuffer();
+            const decoded = await ctx.decodeAudioData(buf);
+            extractedAudioDuration = decoded.duration || 0;
+            ctx.close();
+          } catch (e) {
+            extractedAudioDuration = 0;
+          }
+
+          metaAudioDuration.textContent = fmtSec(extractedAudioDuration);
+
+          // Initialize trim region to full duration
+          trimStartSec = 0;
+          trimEndSec   = extractedAudioDuration || 0;
+          updateTimelineFromValues();
+
+          setStatus(statusExtract, "ok", "AAC audio extracted successfully.");
+          setStatus(statusTrim, "info", "Drag handles to select region, then export.");
+          btnTrimM4A.disabled = false;
+          btnTrimMP3.disabled = false;
+        } catch (err) {
+          console.error(err);
+          setStatus(statusExtract, "err", "FFmpeg failed to extract audio (codec unsupported or error).");
+        } finally {
+          hideLoader();
+        }
+      });
+
+      // Common trim function for M4A / MP3
+      async function trimAndDownload(format) {
+        if (!extractedAudioBlob) {
+          setStatus(statusTrim, "err", "No extracted audio found. Run Extract first.");
+          return;
+        }
+
+        const total = extractedAudioDuration || 0;
+        if (!total || !isFinite(total) || total <= 0) {
+          setStatus(statusTrim, "err", "Audio duration unknown.");
+          return;
+        }
+
+        const start = Math.max(0, Math.min(trimStartSec, total));
+        const end   = Math.max(0, Math.min(trimEndSec, total));
+        if (end <= start) {
+          setStatus(statusTrim, "err", "End must be greater than start.");
+          return;
+        }
+        const duration = end - start;
+
+        await ensureFFmpeg();
+        if (!ffmpegReady) return;
+
+        const isM4A = (format === "m4a");
+        const label = isM4A ? "M4A (copy)" : "MP3 (re-encode)";
+        showLoader("Trimming clip…", `Exporting ${duration.toFixed(2)}s as ${label}`);
+        setStatus(statusTrim, "info", `Trimming as ${label}…`);
+
+        try {
+          try { ffmpeg.FS("unlink", "audio_full.m4a"); } catch (e) {}
+          ffmpeg.FS("writeFile", "audio_full.m4a", await fetchFile(extractedAudioBlob));
+          try { ffmpeg.FS("unlink", "audio_trimmed.m4a"); } catch (e) {}
+          try { ffmpeg.FS("unlink", "audio_trimmed.mp3"); } catch (e) {}
+
+          if (isM4A) {
+            // Fast copy – no re-encode
+            await ffmpeg.run(
+              "-ss", String(start.toFixed(3)),
+              "-i", "audio_full.m4a",
+              "-t", String(duration.toFixed(3)),
+              "-c", "copy",
+              "audio_trimmed.m4a"
+            );
+          } else {
+            // Re-encode to MP3 using libmp3lame
+            await ffmpeg.run(
+              "-ss", String(start.toFixed(3)),
+              "-i", "audio_full.m4a",
+              "-t", String(duration.toFixed(3)),
+              "-acodec", "libmp3lame",
+              "-b:a", "192k",
+              "audio_trimmed.mp3"
+            );
+          }
+
+          let trimmed, trimmedBlob, url, mime, ext;
+          if (isM4A) {
+            trimmed = ffmpeg.FS("readFile", "audio_trimmed.m4a");
+            trimmedBlob = new Blob([trimmed.buffer], { type: "audio/mp4" });
+            ext = "m4a";
+          } else {
+            trimmed = ffmpeg.FS("readFile", "audio_trimmed.mp3");
+            trimmedBlob = new Blob([trimmed.buffer], { type: "audio/mpeg" });
+            ext = "mp3";
+          }
+
+          if (lastTrimmedUrl) URL.revokeObjectURL(lastTrimmedUrl);
+          lastTrimmedUrl = URL.createObjectURL(trimmedBlob);
+          trimAudioPreview.src = lastTrimmedUrl;
+          trimPreviewBlock.style.display = "block";
+
+          const a = document.createElement("a");
+          a.href = lastTrimmedUrl;
+          const baseName = loadedVideoFile
+            ? loadedVideoFile.name.replace(/\.[^.]+$/, "")
+            : "clip";
+          a.download = `${baseName}_${start.toFixed(2)}-${end.toFixed(2)}.${ext}`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+
+          metaLastExport.textContent = `${fmtSec(start)} → ${fmtSec(end)} (${duration.toFixed(2)} s, ${ext.toUpperCase()})`;
+          setStatus(statusTrim, "ok", `Trimmed clip exported as .${ext} and download started.`);
+        } catch (err) {
+          console.error(err);
+          setStatus(statusTrim, "err", `FFmpeg failed to trim audio as ${format.toUpperCase()}.`);
+        } finally {
+          hideLoader();
+        }
+      }
+
+      // Trim button handlers
+      btnTrimM4A.addEventListener("click", () => {
+        trimAndDownload("m4a");
+      });
+
+      btnTrimMP3.addEventListener("click", () => {
+        trimAndDownload("mp3");
+      });
+
+      // Initial state + attach timeline drag
+      resetAll();
+      attachTimelineDrag();
+      window.addEventListener("resize", () => {
+        if (extractedAudioDuration > 0) {
+          updateTimelineFromValues();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
